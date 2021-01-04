@@ -5,8 +5,9 @@ import random  # Not strictly required; used to randomize the starting-grid
 
 
 class Grid:
-    def __init__(self):
+    def __init__(self, grid_size):
         # Generate the set of tile labels:
+        self.size = grid_size
         tile_range = []
         for a_tile in range(1, grid_size * grid_size):
             tile_range.append(a_tile)
@@ -49,14 +50,14 @@ class Grid:
         if valid_plays.__contains__(value):
             old_free_position = self.free_position
             self.free_position = self.get_tile_position(value)
-            self.set_tile_position(value, old_free_position[0], old_free_position[1])
-            return True
+            if self.set_tile_position(value, old_free_position[0], old_free_position[1]):
+                return True
         return False
 
     def print(self):
-        for x in range(grid_size):
+        for x in range(self.size):
             print("\t", end="")
-            for y in range(grid_size):
+            for y in range(self.size):
                 this_cell = self.get_tile_value(x, y)
                 if this_cell is None:
                     print(f"\t", end="")
@@ -96,17 +97,17 @@ def input_grid_size():
             size = 4
             no_intention = False
         elif intention.isdigit():
-            if 2 < int(intention) < 12:
-                size = int(intention)
+            size = int(intention)
+            if 2 < size < 12:
                 no_intention = False
     return size
 
 
 if __name__ == '__main__':
-    grid_size = input_grid_size()
-    this_grid = Grid()
+    game_size = input_grid_size()
+    this_game = Grid(game_size)
 
-    this_grid.print()
+    this_game.print()
     while True:
-        while this_grid.move_tile(input("enter the number of the tile you would like to move: ")):
-            this_grid.print()
+        while this_game.move_tile(input("enter the number of the tile you would like to move: ")):
+            this_game.print()

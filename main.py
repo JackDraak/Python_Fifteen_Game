@@ -7,21 +7,21 @@ import random  # Not strictly required; used to randomize the starting-grid
 class Grid:
     def __init__(self, size):
         self.size = size
-        tile_labels = []
+        labels = []
         for label in range(1, size * size):
-            tile_labels.append(label)
+            labels.append(label)
         self.tiles = []
         for row in range(size):
             for column in range(size):
-                if len(tile_labels) > 0:
-                    random_label = tile_labels.pop(random.randint(0, len(tile_labels) - 1))
+                if len(labels) > 0:
+                    random_label = labels.pop(random.randint(0, len(labels) - 1))
                     self.tiles.append(Tile(random_label, row, column))
         self.free_position = size - 1, size - 1
 
     def get_tile_position(self, value):
-        for this_tile in self.tiles:
-            if this_tile.label == value:
-                return this_tile.row, this_tile.column
+        for tile in self.tiles:
+            if tile.label == value:
+                return tile.row, tile.column
         return False
 
     def get_tile_label(self, row, column):

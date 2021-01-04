@@ -5,77 +5,75 @@ import random  # Not strictly required; used to randomize the starting-grid
 
 
 class Grid:
-    def __init__(self, grid_size):
-        # Generate the set of tile labels:
-        self.size = grid_size
-        tile_range = []
-        for a_tile in range(1, grid_size * grid_size):
-            tile_range.append(a_tile)
-
-        # Randomly label the tiles, and assign unique positions:
+    def __init__(self, size):
+        self.size = size
+        tile_labels = []
+        for label in range(1, size * size):
+            tile_labels.append(label)
         self.tiles = []
-        for row in range(grid_size):
-            for column in range(grid_size):
-                if len(tile_range) > 0:
-                    self.tiles.append(Tile(tile_range.pop(random.randint(0, len(tile_range) - 1)), row, column))
-
-        # Note the initially "open" position (the final cell) on the grid:
-        self.free_position = grid_size - 1, grid_size - 1
+        for row in range(size):
+            for column in range(size):
+                if len(tile_labels) > 0:
+                    random_label = tile_labels.pop(random.randint(0, len(tile_labels) - 1))
+                    self.tiles.append(Tile(random_label, row, column))
+        self.free_position = size - 1, size - 1
 
     def get_tile_position(self, value):
         for this_tile in self.tiles:
-            if this_tile.value == value:
+            if this_tile.label == value:
                 return this_tile.row, this_tile.column
         return False
 
-    def get_tile_value(self, row, column):
-        for this_tile in self.tiles:
-            if this_tile.row == row and this_tile.column == column:
-                return this_tile.value
+    def get_tile_label(self, row, column):
+        for tile in self.tiles:
+            if tile.row == row and tile.column == column:
+                return tile.label
 
-    def get_valid_plays(self):
-        plays = []
+    def get_valid_moves(self):
+        valid_moves = []
         free_row, free_column = self.free_position
-        for this_tile in self.tiles:
-            if this_tile.row == free_row:
-                if this_tile.column + 1 == free_column or this_tile.column - 1 == free_column:
-                    plays.append(this_tile.value)
-            if this_tile.column == free_column:
-                if this_tile.row + 1 == free_row or this_tile.row - 1 == free_row:
-                    plays.append(this_tile.value)
-        return plays
+        for tile in self.tiles:
+            if tile.row == free_row:
+                if tile.column + 1 == free_column or tile.column - 1 == free_column:
+                    valid_moves.append(tile.label)
+            if tile.column == free_column:
+                if tile.row + 1 == free_row or tile.row - 1 == free_row:
+                    valid_moves.append(tile.label)
+        return valid_moves
 
     def move_tile(self, value):
-        valid_plays = self.get_valid_plays()
-        if valid_plays.__contains__(value):
+        valid_moves = self.get_valid_moves()
+        if valid_moves.__contains__(value):
             old_free_position = self.free_position
             self.free_position = self.get_tile_position(value)
             if self.set_tile_position(value, old_free_position[0], old_free_position[1]):
                 return True
+            else:
+                self.free_position = old_free_position
         return False
 
     def print(self):
         for x in range(self.size):
             print("\t", end="")
             for y in range(self.size):
-                this_cell = self.get_tile_value(x, y)
-                if this_cell is None:
+                label = self.get_tile_label(x, y)
+                if label is None:
                     print(f"\t", end="")
                 else:
-                    print(f"\t{self.get_tile_value(x, y)}", end="")
+                    print(f"\t{self.get_tile_label(x, y)}", end="")
             print()
 
-    def set_tile_position(self, value, row, column):
-        for this_tile in self.tiles:
-            if this_tile.value == value:
-                this_tile.set_position(row, column)
+    def set_tile_position(self, label, row, column):
+        for tile in self.tiles:
+            if tile.label == label:
+                tile.set_position(row, column)
                 return True
         return False
 
 
 class Tile:
-    def __init__(self, value, row, column):
-        self.value = str(value)
+    def __init__(self, label, row, column):
+        self.label = str(label)
         self.row = row
         self.column = column
 
@@ -83,8 +81,9 @@ class Tile:
         self.row = row
         self.column = column
 
+    # only used for debugging purposes: view tile meta-data
     def print(self):
-        print(f"Tile: {self.value}, position: {self.row}, {self.column}")
+        print(f"Tile: {self.label}, position: {self.row}, {self.column}")
 
 
 def input_grid_size():
@@ -104,10 +103,11 @@ def input_grid_size():
 
 
 if __name__ == '__main__':
-    game_size = input_grid_size()
-    this_game = Grid(game_size)
+    # Initialize and display a new Grid-class game object of the specified size:
+    game = Grid(input_grid_size())
+    game.print()
 
-    this_game.print()
+    # Move the tiles, one-by-one, until you get bored:
     while True:
-        while this_game.move_tile(input("enter the number of the tile you would like to move: ")):
-            this_game.print()
+        while game.move_tile(input("enter the label of the tile you would like to move: ")):
+            game.print()

@@ -1,5 +1,7 @@
 # Playing around with Python 3, continued:
 # the game "Fifteen", for the console:
+# (C) 2021 Jack Draak
+
 
 import random  # Not strictly required; used to randomize the starting-grid
 
@@ -18,9 +20,9 @@ class Grid:
                     self.tiles.append(Tile(random_label, row, column))
         self.free_position = size - 1, size - 1
 
-    def get_tile_position(self, value):
+    def get_tile_position(self, label):
         for tile in self.tiles:
-            if tile.label == value:
+            if tile.label == label:
                 return tile.row, tile.column
         return False
 

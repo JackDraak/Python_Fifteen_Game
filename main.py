@@ -27,9 +27,9 @@ class Grid:
                 return this_tile.row, this_tile.column
         return False
 
-    def get_tile_value(self, this_row, this_column):
+    def get_tile_value(self, row, column):
         for this_tile in self.tiles:
-            if this_tile.row == this_row and this_tile.column == this_column:
+            if this_tile.row == row and this_tile.column == column:
                 return this_tile.value
 
     def get_valid_plays(self):
@@ -45,13 +45,28 @@ class Grid:
                     plays.append(this_tile.value)
         return plays
 
+    def move_tile(self, value):
+        valid_plays = self.get_valid_plays()
+        if valid_plays.__contains__(value):
+            temp = self.free_position
+            self.free_position = self.get_tile_position(value)
+            self.set_tile_position(value, temp[0], temp[1])
+
     def print(self):
         for x in range(grid_size):
             print("\t", end="")
             for y in range(grid_size):
-                print(f"\t{self.get_tile_value(x, y)}", end="")
+                this_cell = self.get_tile_value(x, y)
+                if this_cell is None:
+                    print(f"\t", end="")
+                else:
+                    print(f"\t{self.get_tile_value(x, y)}", end="")
             print()
 
+    def set_tile_position(self, value, row, column):
+        for this_tile in self.tiles:
+            if this_tile.value == value:
+                this_tile.set_position(row, column)
 
 class Tile:
     def __init__(self, value, row, column):
@@ -82,5 +97,7 @@ if __name__ == '__main__':
     # print(this_grid.get_tile_position(10))
     # print(this_grid.get_tile_value(1, 1))
 
-    print(this_grid.get_valid_plays())  # Work in progress?
-    this_grid.print()
+    while True:
+        this_grid.print()
+        print(this_grid.get_valid_plays())
+        this_grid.move_tile(input("Tile to move: "))

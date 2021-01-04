@@ -20,16 +20,29 @@ class Grid:
                     self.tiles.append(Tile(random_label, row, column))
         self.free_position = size - 1, size - 1
 
-    def get_tile_position(self, label):
-        for tile in self.tiles:
-            if tile.label == label:
-                return tile.row, tile.column
-        return False
+    def __repr__(self):
+        print_string = str()
+        for x in range(self.size):
+            print_string += "\t"
+            for y in range(self.size):
+                label = self.get_tile_label(x, y)
+                if label is None:
+                    print_string += "\t"
+                else:
+                    print_string += f"\t{self.get_tile_label(x, y)}"
+            print_string += "\n"
+        return print_string
 
     def get_tile_label(self, row, column):
         for tile in self.tiles:
             if tile.row == row and tile.column == column:
                 return tile.label
+
+    def get_tile_position(self, label):
+        for tile in self.tiles:
+            if tile.label == label:
+                return tile.row, tile.column
+        return False
 
     def get_valid_moves(self):
         valid_moves = []
@@ -54,17 +67,6 @@ class Grid:
                 self.free_position = old_free_position
         return False
 
-    def print(self):
-        for x in range(self.size):
-            print("\t", end="")
-            for y in range(self.size):
-                label = self.get_tile_label(x, y)
-                if label is None:
-                    print(f"\t", end="")
-                else:
-                    print(f"\t{self.get_tile_label(x, y)}", end="")
-            print()
-
     def set_tile_position(self, label, row, column):
         for tile in self.tiles:
             if tile.label == label:
@@ -79,13 +81,13 @@ class Tile:
         self.row = row
         self.column = column
 
+    # only used for debugging purposes to view a tile's meta-data
+    def __repr__(self):
+        print(f"Tile: {self.label}, position: {self.row}, {self.column}")
+
     def set_position(self, row, column):
         self.row = row
         self.column = column
-
-    # only used for debugging purposes: view tile meta-data
-    def print(self):
-        print(f"Tile: {self.label}, position: {self.row}, {self.column}")
 
 
 def input_grid_size():
@@ -107,9 +109,9 @@ def input_grid_size():
 if __name__ == '__main__':
     # Initialize and display a new Grid-class game object of the specified size:
     game = Grid(input_grid_size())
-    game.print()
+    print(game)
 
     # Move the tiles, one-by-one, until you get bored:
     while True:
         while game.move_tile(input("enter the label of the tile you would like to move: ")):
-            game.print()
+            print(game)

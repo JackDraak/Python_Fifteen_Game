@@ -19,7 +19,7 @@ class Game:
                 tiles.append(Tile(this_label, row, column))
         self.tiles = tiles
         self.solution = self.get_tile_set()
-        self.shuffle(1)  # starting with a "light" shuffle
+        self.shuffle(50)  # starting with a "light" shuffle
 
     def __repr__(self):
         print_string = str()
@@ -132,7 +132,7 @@ def play(game):
     # Move the tiles, one-by-one, until player get bored:
     while True:
         print(game)
-        print(game.get_tile_set())  # debug
+        # print(game.get_tile_set())  # debug
         # print(game.get_valid_moves())  # debug
         input_string = \
             str(f"Please, enter the label of the tile you would like to move\nvalid plays: {game.get_valid_moves()} ")

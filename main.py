@@ -8,17 +8,18 @@ import random  # will be used soon for shuffling the board and/or seeking a solu
 
 class Game:
     def __init__(self, size):
+        self.free_label = str(size * size)
+        self.free_position = size - 1, size - 1
+        self.size = size
         tiles = []
         this_label = 0
         for row in range(size):
             for column in range(size):
                 this_label += 1
                 tiles.append(Tile(this_label, row, column))
-        self.free_label = str(size * size)
-        self.free_position = size - 1, size - 1
-        self.size = size
         self.tiles = tiles
-        self.solution = tuple(self.get_tile_set())
+        self.solution = self.get_tile_set()
+        self.shuffle(1)  # starting with a "light" shuffle
 
     def __repr__(self):
         print_string = str()
@@ -67,7 +68,7 @@ class Game:
         return valid_moves
 
     def is_solved(self):
-        return tuple(self.get_tile_set()) == self.solution
+        return self.get_tile_set() == self.solution
 
     def set_tile_position(self, label, row, column):
         for tile in self.tiles:
@@ -75,6 +76,13 @@ class Game:
                 tile.move_to(row, column)
                 return True
         return False
+
+    def shuffle(self, cycles):
+        while cycles > 0:
+            options = self.get_valid_moves()
+            random_move = options[random.randint(0, len(options) - 1)]
+            self.slide_tile(random_move)
+            cycles -= 1
 
     def slide_tile(self, label):
         valid_moves = self.get_valid_moves()
@@ -124,7 +132,7 @@ def play(game):
     # Move the tiles, one-by-one, until player get bored:
     while True:
         print(game)
-        # print(game.get_tile_set())  # debug
+        print(game.get_tile_set())  # debug
         # print(game.get_valid_moves())  # debug
         input_string = \
             str(f"Please, enter the label of the tile you would like to move\nvalid plays: {game.get_valid_moves()} ")
@@ -132,6 +140,9 @@ def play(game):
         print()
         if not game.slide_tile(player_move):
             print("Input not understood...\n")
+        if game.is_solved():
+            print("Congratulations, you solved the puzzle!")
+            game.shuffle(int(input("How many times would you like to shuffle? ")))  # TODO validate user input
 
 
 if __name__ == '__main__':

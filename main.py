@@ -43,8 +43,8 @@ class Game:
     def get_inversion_count(self):
         inversions = 0
         tile_set = self.get_tile_set()
-        for fore in range(int(self.blank_label) - 1):
-            for aft in range(int(self.blank_label)):
+        for fore in range(len(tile_set)):
+            for aft in range(fore + 1, len(tile_set)):
                 if fore < aft and int(tile_set[fore]) > int(tile_set[aft]):
                     inversions += 1
         return inversions
@@ -83,6 +83,10 @@ class Game:
 
     def is_solved(self):
         return self.solution == self.get_tile_set()
+
+    def is_valid(self):
+        # If grid is odd, return true if inversion count is even.
+        pass
 
     def set_tile_position(self, label, row, column):
         for tile in self.tiles:

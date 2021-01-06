@@ -8,18 +8,22 @@ import random
 
 class Game:
     def __init__(self, size):
+        entropy_factor = 100
         self.blank_label = str(size * size)
         self.blank_position = size - 1, size - 1
-        self.shuffle_default = size * 25
+        self.shuffle_default = size * entropy_factor
         self.size = size
+
         tiles = []
-        this_label = 0
+        label = 0
         for row in range(size):
             for column in range(size):
-                this_label += 1
-                tiles.append(Tile(this_label, row, column))
+                label += 1
+                tiles.append(Tile(label, row, column))
         self.tiles = tiles
+
         self.solution = self.get_tile_set()
+
         self.shuffle(self.shuffle_default)
 
     def __repr__(self):
@@ -55,13 +59,13 @@ class Game:
 
     def get_valid_moves(self):
         valid_moves = []
-        free_row, free_column = self.blank_position
+        blank_row, blank_column = self.blank_position
         for tile in self.tiles:
-            if tile.row == free_row:
-                if tile.column + 1 == free_column or tile.column - 1 == free_column:
+            if tile.row == blank_row:
+                if tile.column + 1 == blank_column or tile.column - 1 == blank_column:
                     valid_moves.append(tile.label)
-            if tile.column == free_column:
-                if tile.row + 1 == free_row or tile.row - 1 == free_row:
+            if tile.column == blank_column:
+                if tile.row + 1 == blank_row or tile.row - 1 == blank_row:
                     valid_moves.append(tile.label)
         if valid_moves.__contains__(self.blank_label):
             valid_moves.remove(self.blank_label)
@@ -78,10 +82,14 @@ class Game:
         return False
 
     def shuffle(self, cycles):
+        last_move = str()
         while cycles > 0:
             options = self.get_valid_moves()
+            if options.__contains__(last_move):
+                options.remove(last_move)
             random_move = options[random.randint(0, len(options) - 1)]
             self.slide_tile(random_move)
+            last_move = random_move
             cycles -= 1
 
     def slide_tile(self, label):
@@ -111,32 +119,32 @@ class Tile:
 
 def input_game_size():
     size_default = 4
-    size_max = 12
+    size_max = 31
     size_min = 3
+    size = size_default
     print("\nTo play the classic tile game, '15', ", end="")
-    no_intention = True
-    while no_intention:
-        intention = input(f"please chose a grid size from {size_min} to {size_max} [default: {size_default}] " +
+    invalid_input = True
+    while invalid_input:
+        grid_size = input(f"please chose a grid size from {size_min} to {size_max} [default: {size_default}] " +
                           "\n(the goal of the game is to slide the game tiles into the 'open' position, 1-by-1, " +
-                          "until the tiles are in-order.) ")
-        if intention == "":
-            size = size_default
-            no_intention = False
-        elif intention.isdigit():
-            size = int(intention)
+                          "until the tiles are in ascending order.) ")
+        if grid_size == "":
+            invalid_input = False
+        elif grid_size.isdigit():
+            size = int(grid_size)
             if size_min <= size <= size_max:
-                no_intention = False
+                invalid_input = False
     print()
     return size
 
 
 def input_shuffle(game):
-    print("Congratulations, you solved the puzzle! ")
+    print("Congratulations, you solved the puzzle! \n")
     print(game)
     shuffles = ""
     shuffles_default = str(game.shuffle_default)
     while not shuffles.isdigit():
-        shuffles = input(f"How many times would you like to shuffle? [default: {shuffles_default}] ")
+        shuffles = input(f"How many times would you like to shuffle? [default: {shuffles_default}] \n")
         if shuffles == "":
             shuffles = shuffles_default
     game.shuffle(int(shuffles))

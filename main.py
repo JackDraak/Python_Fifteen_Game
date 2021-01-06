@@ -19,7 +19,7 @@ class Game:
                 tiles.append(Tile(this_label, row, column))
         self.tiles = tiles
         self.solution = self.get_tile_set()
-        self.shuffle(50)  # starting with a "light" shuffle
+        self.shuffle(100)  # starting with a "light" shuffle
 
     def __repr__(self):
         print_string = str()
@@ -113,10 +113,12 @@ class Tile:
 
 def input_game_size():
     size = int()
-    print("To play the classic tile game, '15', ", end="")
+    print("\nTo play the classic tile game, '15', ", end="")
     no_intention = True
     while no_intention:
-        intention = input("please enter a grid size greater than 2, and less than 12 [default: 4] ")
+        intention = input("please enter a grid size greater than 2, and less than 12 [default: 4] " +
+                          "\n(the goal of the game is to slide the game tiles into the 'open' position, 1-by-1, " +
+                          "until the tiles are in-order.) ")
         if intention == "":
             size = 4  # default
             no_intention = False
@@ -135,14 +137,19 @@ def play(game):
         # print(game.get_tile_set())  # debug
         # print(game.get_valid_moves())  # debug
         input_string = \
-            str(f"Please, enter the label of the tile you would like to move\nvalid plays: {game.get_valid_moves()} ")
+            str("Please, enter the label of the tile you would like to push into the gap\n" +
+                f"valid plays: {game.get_valid_moves()} ")
         player_move = input(input_string)
         print()
         if not game.slide_tile(player_move):
             print("Input not understood...\n")
         if game.is_solved():
             print("Congratulations, you solved the puzzle!")
-            game.shuffle(int(input("How many times would you like to shuffle? ")))  # TODO validate user input
+            print(game)
+            shuffles = ""
+            while not shuffles.isdigit():
+                shuffles = input("How many times would you like to shuffle? [>100 advised] ")
+            game.shuffle(int(shuffles))
 
 
 if __name__ == '__main__':

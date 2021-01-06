@@ -37,7 +37,17 @@ class Game:
                 else:
                     print_string += "\t"
             print_string += "\n"
+        print_string += str(self.get_inversion_count())
         return print_string
+
+    def get_inversion_count(self):
+        inversions = 0
+        tile_set = self.get_tile_set()
+        for fore in range(int(self.blank_label) - 1):
+            for aft in range(int(self.blank_label)):
+                if fore < aft and int(tile_set[fore]) > int(tile_set[aft]):
+                    inversions += 1
+        return inversions
 
     def get_tile_label(self, row, column):
         for tile in self.tiles:

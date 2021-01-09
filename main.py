@@ -2,70 +2,68 @@
 # the classic game "Fifteen", for the console:
 # (C) 2021 Jack Draak
 
-
 import random
+import time
 
 
 class Game:
-    def __init__(self, size):
+    def __init__(self, dimension):
         entropy_factor = 100
-        self.blank_label = str(size * size)
-        self.blank_position = size - 1, size - 1
-        self.shuffle_default = size * entropy_factor
-        self.size = size
-
-        tiles = []
-        label = 0
-        for row in range(size):
-            for column in range(size):
-                label += 1
-                tiles.append(Tile(label, row, column))
-        self.tiles = tiles
-
-        self.solution = self.get_tile_set()
-
+        self.dimension = dimension
+        self.blank_label = str(dimension * dimension)
+        self.blank_position = dimension - 1, dimension - 1
+        self.shuffle_default = 5  # dimension * entropy_factor + 1  # TODO restore equation for a proper default shuffle
+        self.tiles = self.reset_game(dimension)
+        self.solution = self.get_tile_layout()
         self.shuffle(self.shuffle_default)
 
     def __repr__(self):
         print_string = str()
-        for x in range(self.size):
+        for x in range(self.dimension):
             print_string += "\t"
-            for y in range(self.size):
-                label = self.get_tile_label(x, y)
+            for y in range(self.dimension):
+                label = self.get_label(x, y)
                 if label != self.blank_label:
                     print_string += f"\t{label}"
                 else:
                     print_string += "\t"
             print_string += "\n"
-        print_string += str(self.get_inversion_count())
         return print_string
 
-    def get_inversion_count(self):
-        inversions = 0
-        tile_set = self.get_tile_set()
-        for fore in range(len(tile_set)):
-            for aft in range(fore + 1, len(tile_set)):
-                if fore < aft and int(tile_set[fore]) > int(tile_set[aft]):
-                    inversions += 1
-        return inversions
+    def duplicate(self):
+        a_game = Game(self.dimension)
+        a_game.import_tiles(self.export_tiles())
+        return a_game
 
-    def get_tile_label(self, row, column):
+    def export_tiles(self):
+        tiles = []
+        for tile in self.tiles:
+            tiles.append(Tile(tile.label, tile.row, tile.column, tile.dimension))
+        return tiles
+
+    def get_label(self, row, column):
         for tile in self.tiles:
             if tile.row == row and tile.column == column:
                 return tile.label
+
+    def get_position(self, label):
+        for tile in self.tiles:
+            if tile.label == label:
+                return tile.row, tile.column
+        return False
+
+    def get_tile_layout(self):
+        tiles = []
+        for row in range(self.dimension):
+            for column in range(self.dimension):
+                tiles.append(self.get_label(row, column))
+        return tiles
 
     def get_tile_position(self, label):
         for tile in self.tiles:
             if tile.label == label:
                 return tile.row, tile.column
         return False
-
-    def get_tile_set(self):
-        tile_set = []
-        for x in range(self.size):
-            for y in range(self.size):
-                tile_set.append(self.get_tile_label(x, y))
-        return tile_set
 
     def get_valid_moves(self):
         valid_moves = []
@@ -81,12 +79,27 @@ class Game:
             valid_moves.remove(self.blank_label)
         return valid_moves
 
-    def is_solved(self):
-        return self.solution == self.get_tile_set()
+    def h(self):
+        sum_h = 0
+        for tile in self.tiles:
+            sum_h += tile.h
+        return int(sum_h)
 
-    def is_valid(self):
-        # If grid is odd, return true if inversion count is even.
-        pass
+    def import_tiles(self, tiles):
+        self.tiles = tiles
+
+    def is_solved(self):
+        return self.solution == self.get_tile_layout()
+
+    @staticmethod
+    def reset_game(dimension):
+        tiles = []
+        label = 0
+        for row in range(dimension):
+            for column in range(dimension):
+                label += 1
+                tiles.append(Tile(label, row, column, dimension))
+        return tiles
 
     def set_tile_position(self, label, row, column):
         for tile in self.tiles:
@@ -117,18 +130,48 @@ class Game:
         return False
 
 
-class Tile:
-    def __init__(self, label, row, column):
-        self.label = str(label)
+class Node:
+    def __init__(self, sequence, h, label, row, column):
+        self.g = sequence
+        self.h = h
+        self.label = label
         self.row = row
         self.column = column
+        self.sequence = sequence
+
+
+class HopScore:
+    def __init__(self, label, h, sequence):
+        self.h = int(h)
+        self.label = label
+        self.sequence = sequence
+
+    def __lt__(self, other):
+        return self.h < other
 
     def __repr__(self):
-        return str(f"<Tile> label:{self.label}, position: {self.row}, {self.column}")
+        return f"HopScore-{self.sequence}: #{self.label}({self.h}) "
+
+
+class Tile:
+    def __init__(self, label, row, column, dimension):
+        self.column = column
+        self.dimension = dimension
+        self.label = str(label)
+        self.row = row
+        self.h = abs(int(self.label) - 1 - ((self.row * self.dimension) + self.column))
+
+    def __repr__(self):
+        return str(f"<Tile> label:{self.label}, position: {self.row}, {self.column} H: {self.h()}")
 
     def move_to(self, row, column):
         self.row = row
         self.column = column
+
+    def set(self, label, row, column):
+        self.column = column
+        self.label = str(label)
+        self.row = row
 
 
 def input_game_size():
@@ -175,6 +218,46 @@ def input_turn(game):
         print("Input not understood...\n")
 
 
+def auto_play(game):
+    blank_position = game.blank_position
+    this_game = game.duplicate()
+    last_move = ""
+    nodes = list()
+    turn = 1
+
+    while this_game.h() != 0:
+        open_moves = list()
+        for move in this_game.get_valid_moves():
+            if move is not last_move:
+                open_moves.append(move)
+
+        scores = list()
+        for move in open_moves:
+            test_game = this_game.duplicate()
+            test_game.slide_tile(move)
+            scores.append(HopScore(move, int(test_game.h()), turn))
+            print(f"adding score: {test_game.h()} for move: {move}")
+        for score in scores:
+            print(score)
+            print(score.h)
+
+        low_score = 99999
+        move = ""
+        for score in scores:
+            if score < low_score:
+                low_score = score.h
+                move = score.label
+        game.slide_tile(move)
+
+        # TODO use blank-position for A* pathing?
+        nodes.append(Node(turn, game.h, move, blank_position[0], blank_position[1]))
+        blank_position = game.blank_position
+        last_move = move
+        turn += 1
+        print(game)
+        time.sleep(0.5)
+
+
 def play(game):
     while True:
         input_turn(game)
@@ -183,4 +266,6 @@ def play(game):
 
 
 if __name__ == '__main__':
+    my_dimension = 3
+    # auto_play(Game(my_dimension))  # TODO - this is work in progress
     play(Game(input_game_size()))

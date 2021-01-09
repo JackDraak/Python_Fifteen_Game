@@ -12,10 +12,10 @@ class Game:
         self.dimension = dimension
         self.blank_label = str(dimension * dimension)
         self.blank_position = dimension - 1, dimension - 1
-        self.shuffle_default = 5  # dimension * entropy_factor + 1  # TODO restore equation for a proper default shuffle
-        self.tiles = self.reset_game(dimension)
-        self.solution = self.get_tile_layout()
-        self.shuffle(self.shuffle_default)
+        self.shuffle_default = dimension * entropy_factor
+        self.tiles = self.reset_game(dimension)             # populate a fresh set of game tiles
+        self.solution = self.get_labels_as_list()           # store the win state
+        self.shuffle(self.shuffle_default)                  # give the tile-grid a shuffle
 
     def __repr__(self):
         print_string = str()
@@ -31,12 +31,12 @@ class Game:
         return print_string
 
     def duplicate(self):
-        a_game = Game(self.dimension)
-        a_game.import_tiles(self.export_tiles())
-        return a_game
+        duplicate_game = Game(self.dimension)
+        duplicate_game.import_tiles(self.export_tiles())
+        return duplicate_game
 
     def export_tiles(self):
-        tiles = []
+        tiles = list()
         for tile in self.tiles:
             tiles.append(Tile(tile.label, tile.row, tile.column, tile.dimension))
         return tiles
@@ -46,20 +46,14 @@ class Game:
             if tile.row == row and tile.column == column:
                 return tile.label
 
-    def get_position(self, label):
-        for tile in self.tiles:
-            if tile.label == label:
-                return tile.row, tile.column
-        return False
-
-    def get_tile_layout(self):
-        tiles = []
+    def get_labels_as_list(self):  # return tile-set labels as a 1D array
+        tiles = list()
         for row in range(self.dimension):
             for column in range(self.dimension):
                 tiles.append(self.get_label(row, column))
         return tiles
 
-    def get_tile_position(self, label):
+    def get_position(self, label):
         for tile in self.tiles:
             if tile.label == label:
                 return tile.row, tile.column
@@ -89,7 +83,7 @@ class Game:
         self.tiles = tiles
 
     def is_solved(self):
-        return self.solution == self.get_tile_layout()
+        return self.solution == self.get_labels_as_list()
 
     @staticmethod
     def reset_game(dimension):
@@ -122,22 +116,12 @@ class Game:
     def slide_tile(self, label):
         if self.get_valid_moves().__contains__(label):
             swap_free_pos = self.blank_position
-            swap_tile_pos = self.get_tile_position(label)
+            swap_tile_pos = self.get_position(label)
             self.set_tile_position(label, swap_free_pos[0], swap_free_pos[1])
             self.set_tile_position(self.blank_label, swap_tile_pos[0], swap_tile_pos[1])
             self.blank_position = swap_tile_pos[0], swap_tile_pos[1]
             return True
         return False
-
-
-class Node:
-    def __init__(self, sequence, h, label, row, column):
-        self.g = sequence
-        self.h = h
-        self.label = label
-        self.row = row
-        self.column = column
-        self.sequence = sequence
 
 
 class HopScore:
@@ -151,6 +135,16 @@ class HopScore:
 
     def __repr__(self):
         return f"HopScore-{self.sequence}: #{self.label}({self.h}) "
+
+
+class Node:
+    def __init__(self, sequence, h, label, row, column):
+        self.g = sequence
+        self.h = h
+        self.label = label
+        self.row = row
+        self.column = column
+        self.sequence = sequence
 
 
 class Tile:
@@ -236,10 +230,7 @@ def auto_play(game):
             test_game = this_game.duplicate()
             test_game.slide_tile(move)
             scores.append(HopScore(move, int(test_game.h()), turn))
-            print(f"adding score: {test_game.h()} for move: {move}")
-        for score in scores:
-            print(score)
-            print(score.h)
+            # print(f"adding score: {test_game.h()} for move: {move}")
 
         low_score = 99999
         move = ""
@@ -254,7 +245,7 @@ def auto_play(game):
         blank_position = game.blank_position
         last_move = move
         turn += 1
-        print(game)
+        print(f"Move: {move}\n" + str(game))
         time.sleep(0.5)
 
 
@@ -266,6 +257,7 @@ def play(game):
 
 
 if __name__ == '__main__':
-    my_dimension = 3
+    # my_dimension = 3
     # auto_play(Game(my_dimension))  # TODO - this is work in progress
+
     play(Game(input_game_size()))

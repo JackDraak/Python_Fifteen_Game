@@ -32,47 +32,36 @@ class TestGame(TestCase):
         game_b = game_a.duplicate()
         self.assertTrue(game_a.get_labels_as_list() == game_b.get_labels_as_list())
 
-    def test_export_tiles(self):
-        pass  # TODO
-
-    def test_get_h_by_label(self):
-        pass
-
-    def test_get_label(self):
-        pass
-
     def test_get_label_h_pairs(self):
-        pass
-
-    def test_get_labels_as_list(self):
-        pass
-
-    def test_get_labels_as_matrix(self):
-        pass
-
-    def test_get_position(self):
-        pass
-
-    def test_get_valid_moves(self):
-        pass
+        game = Game(3)
+        game.shuffle(333)
+        clean_tiles = [[(1, 0)], [(2, 0)], [(3, 0)], [(4, 0)], [(5, 0)], [(6, 0)], [(7, 0)], [(8, 0)], [(9, 0)]]
+        self.assertNotEqual(game.get_label_h_pairs(), clean_tiles)
+        game.tiles = game.generate_tiles(3)
+        self.assertEqual(game.get_label_h_pairs(), clean_tiles)
 
     def test_h(self):
-        pass
-
-    def test_import_tiles(self):
-        pass
+        game = Game(3)
+        game.shuffle(333)
+        self.assertNotEqual(game.h(), 0)
+        game.tiles = game.generate_tiles(3)
+        self.assertEqual(game.h(), 0)
 
     def test_is_solved(self):
-        pass
-
-    def test_reset_game(self):
-        pass
-
-    def test_set_tile_position(self):
-        pass
-
-    def test_shuffle(self):
-        pass
+        game = Game(3)
+        game.shuffle(333)
+        self.assertFalse(game.is_solved())
+        game.tiles = game.generate_tiles(3)
+        self.assertTrue(game.is_solved())
 
     def test_slide_tile(self):
-        pass
+        game = Game(3)
+        game.tiles = game.generate_tiles(3)
+        print(game)
+        self.assertFalse(game.slide_tile(1))
+        self.assertFalse(game.slide_tile(2))
+        self.assertFalse(game.slide_tile(4))
+        self.assertTrue(game.slide_tile(8))
+        self.assertTrue(game.slide_tile(7))
+        self.assertTrue(game.slide_tile(7))
+        self.assertTrue(game.slide_tile(8))

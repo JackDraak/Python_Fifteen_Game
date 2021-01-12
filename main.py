@@ -13,7 +13,7 @@ class Game:
         self.blank_label = dimension * dimension
         self.blank_position = dimension - 1, dimension - 1
         self.shuffle_default = dimension * entropy_factor
-        self.tiles = self.reset_game(dimension)     # populate a fresh set of game tiles
+        self.tiles = self.generate_tiles(dimension)     # populate a fresh set of game tiles
         self.solution = self.get_labels_as_list()   # store the win state (the un-shuffled matrix)
         self.shuffle(self.shuffle_default)          # give the tile-grid a shuffle
 
@@ -39,6 +39,16 @@ class Game:
         tiles = list()
         for tile in self.tiles:
             tiles.append(Tile(tile.label, tile.row, tile.column, tile.dimension))
+        return tiles
+
+    @staticmethod
+    def generate_tiles(dimension):
+        tiles = list()
+        label = 0
+        for row in range(dimension):
+            for column in range(dimension):
+                label += 1
+                tiles.append(Tile(label, row, column, dimension))
         return tiles
 
     def get_h_by_label(self, label):
@@ -107,16 +117,6 @@ class Game:
 
     def is_solved(self):
         return self.solution == self.get_labels_as_list()
-
-    @staticmethod
-    def reset_game(dimension):
-        tiles = list()
-        label = 0
-        for row in range(dimension):
-            for column in range(dimension):
-                label += 1
-                tiles.append(Tile(label, row, column, dimension))
-        return tiles
 
     def set_tile_position(self, label, row, column):
         for tile in self.tiles:

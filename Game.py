@@ -1,5 +1,5 @@
 import random
-import Tile
+from Tile import Tile
 
 
 class Game:

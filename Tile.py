@@ -1,6 +1,3 @@
-import main
-
-
 class Tile:
     def __init__(self, label, row, column, dimension):
         self.label = label

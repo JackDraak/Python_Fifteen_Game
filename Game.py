@@ -1,6 +1,5 @@
 import random
 import Tile
-import main
 
 
 class Game:

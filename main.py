@@ -3,7 +3,7 @@
 # (C) 2021 Jack Draak
 
 import Game
-import Tile
+import Tile # unused call
 
 
 def input_game_size():

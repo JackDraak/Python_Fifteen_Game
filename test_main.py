@@ -1,6 +1,7 @@
 from unittest import TestCase
 import Tile
 import Game
+import main  # unused call
 
 
 class TestTile(TestCase):

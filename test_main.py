@@ -1,6 +1,6 @@
 from unittest import TestCase
-from main import Tile
-from main import Game
+import Tile
+import Game
 
 
 class TestTile(TestCase):

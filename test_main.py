@@ -1,6 +1,7 @@
 from unittest import TestCase
 from Tile import Tile
 from Game import Game
+import pdb
 
 
 class TestTile(TestCase):
@@ -60,8 +61,11 @@ class TestGame(TestCase):
         print(game)
         self.assertFalse(game.slide_tile(1))
         self.assertFalse(game.slide_tile(1))
-        # self.assertFalse(game.slide_tile(2)) ## True !?!?
-        # self.assertFalse(game.slide_tile(4)) ## True !?!?
+        pdb.set_trace()
+        self.assertFalse(game.slide_tile(2))  ## True !?!?
+        self.assertFalse(game.slide_tile(4))  ## True !?!?
+        self.assertFalse(game.slide_tile(6))  ## False?
+        self.assertFalse(game.slide_tile(6))  ## False?
         self.assertTrue(game.slide_tile(8))
         self.assertTrue(game.slide_tile(7))
         self.assertFalse(game.slide_tile(1))

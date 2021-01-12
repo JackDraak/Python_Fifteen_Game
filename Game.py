@@ -95,13 +95,16 @@ class Game:
         valid_moves = list()
         blank_row, blank_column = self.blank_position
         for tile in self.tiles:
-            if tile.row == blank_row:
+
+            if tile.row == blank_row:                       # Select horizontal neighbors
                 if tile.column + 1 == blank_column or tile.column - 1 == blank_column:
                     valid_moves.append(tile.label)
-            if tile.column == blank_column:
+
+            if tile.column == blank_column:                 # Select vertical neighbors
                 if tile.row + 1 == blank_row or tile.row - 1 == blank_row:
                     valid_moves.append(tile.label)
-        if valid_moves.__contains__(self.blank_label):
+
+        if valid_moves.__contains__(self.blank_label):      # Trim blank-tile from set
             valid_moves.remove(self.blank_label)
         return valid_moves
 

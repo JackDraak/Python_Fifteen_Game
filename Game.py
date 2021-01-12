@@ -1,5 +1,9 @@
-import random
+# Playing around with Python 3, continued...
+# the classic game "Fifteen", for the console:
+# (C) 2021 Jack Draak
+
 from Tile import Tile
+import random
 
 
 class Game:
@@ -69,14 +73,14 @@ class Game:
                 label_pairs.append(pair)
         return label_pairs
 
-    def get_labels_as_list(self):                   # return tile-set labels as a 1D array
+    def get_labels_as_list(self):                       # return tile-set labels as a 1D array
         tiles = list()
         for row in range(self.dimension):
             for column in range(self.dimension):
                 tiles.append(self.get_label(row, column))
         return tiles
 
-    def get_labels_as_matrix(self):                 # return tile-set labels as a 2D array
+    def get_labels_as_matrix(self):                     # return tile-set labels as a 2D array
         tiles = list()
         for row in range(self.dimension):
             rows = list()
@@ -89,22 +93,21 @@ class Game:
         for tile in self.tiles:
             if tile.label == label:
                 return tile.row, tile.column
-        return False
 
     def get_valid_moves(self):
         valid_moves = list()
         blank_row, blank_column = self.blank_position
         for tile in self.tiles:
 
-            if tile.row == blank_row:                       # Select horizontal neighbors
+            if tile.row == blank_row:                   # Select horizontal neighbors
                 if tile.column + 1 == blank_column or tile.column - 1 == blank_column:
                     valid_moves.append(tile.label)
 
-            if tile.column == blank_column:                 # Select vertical neighbors
+            if tile.column == blank_column:             # Select vertical neighbors
                 if tile.row + 1 == blank_row or tile.row - 1 == blank_row:
                     valid_moves.append(tile.label)
 
-        if valid_moves.__contains__(self.blank_label):      # Trim blank-tile from set
+        if valid_moves.__contains__(self.blank_label):  # Trim blank-tile from set
             valid_moves.remove(self.blank_label)
         return valid_moves
 
@@ -137,10 +140,15 @@ class Game:
 
     def slide_tile(self, label):
         if self.get_valid_moves().__contains__(label):
-            swap_free_pos = self.blank_position
-            swap_tile_pos = self.get_position(label)
-            self.set_tile_position(label, swap_free_pos[0], swap_free_pos[1])
-            self.set_tile_position(self.blank_label, swap_tile_pos[0], swap_tile_pos[1])
-            self.blank_position = swap_tile_pos[0], swap_tile_pos[1]
-            return True
+            this_blank_position = self.blank_position
+            this_tile_pos = self.get_position(label)
+            if not self.set_tile_position(label, this_blank_position[0], this_blank_position[1]):   # set pos of tile
+                print(f"\n{self}Game.set_tile_position({label},{this_blank_position[0]},{this_blank_position[1]}) FAIL")
+                return False
+            if not self.set_tile_position(self.blank_label, this_tile_pos[0], this_tile_pos[1]):    # set pos of blank
+                print(f"\n{self}Game.set_tile_position({self.blank_label},{this_tile_pos[0]},{this_tile_pos[1]}) FAIL")
+                return False
+            else:
+                self.blank_position = this_tile_pos[0], this_tile_pos[1]  # update self.blank_position
+                return True
         return False

@@ -1,7 +1,12 @@
+# Playing around with Python 3, continued...
+# the classic game "Fifteen", for the console:
+# (C) 2021 Jack Draak
+
 from unittest import TestCase
 from Tile import Tile
 from Game import Game
-import pdb
+
+import pdb  # pdb.set_trace()
 
 
 class TestTile(TestCase):
@@ -19,7 +24,7 @@ class TestTile(TestCase):
 
     def test_set(self):
         tile = Tile(1, 0, 0, 3)
-        tile.set(9, 8, 7)
+        tile.set(0, 9, 8, 7)
         self.assertEqual(tile.label, 9)
         self.assertEqual(tile.row, 8)
         self.assertEqual(tile.column, 7)
@@ -56,16 +61,21 @@ class TestGame(TestCase):
         self.assertTrue(game.is_solved())
 
     def test_slide_tile(self):
-        game = Game(3)
-        game.tiles = game.generate_tiles(3)
-        print(game)
-        self.assertFalse(game.slide_tile(1))
-        self.assertFalse(game.slide_tile(1))
-        pdb.set_trace()
-        self.assertFalse(game.slide_tile(2))  ## True !?!?
-        self.assertFalse(game.slide_tile(4))  ## True !?!?
-        self.assertFalse(game.slide_tile(6))  ## False?
-        self.assertFalse(game.slide_tile(6))  ## False?
+        game = Game(3)                          # init game as a new (pre-shuffled) Game object, dimension=3
+        game.tiles = game.generate_tiles(3)     # replace shuffled tiles with un-shuffled tiles, for a known state
+        self.assertFalse(game.slide_tile(1))    # from an ordered matrix (of any size) tile 1 is always locked-in
+
+        ### The asserts commented below are highly-likely to trigger intermittent assert failures
+
+        # self.assertFalse(game.slide_tile(2))    # from an ordered matrix (of any size) tile 2 is always locked-in
+        # self.assertFalse(game.slide_tile(4))    # from an ordered matrix (of any size) tile 5 is always locked-in
+
+        # self.assertTrue(game.slide_tile(6))     # from an ordered matrix (dim=3) tile 6 is always free
+        # self.assertTrue(game.slide_tile(6))     # any tile that can slide, can technically slide back to it's origin
+
+        ### The asserts not commented below are less-likely to trigger intermittent assert failures, but still do
+
+        self.assertFalse(game.slide_tile(1))    # more known assertions for an ordered matrix of dimension 3...
         self.assertTrue(game.slide_tile(8))
         self.assertTrue(game.slide_tile(7))
         self.assertFalse(game.slide_tile(1))

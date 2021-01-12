@@ -2,8 +2,8 @@
 # the classic game "Fifteen", for the console:
 # (C) 2021 Jack Draak
 
-import Game
-import Tile
+from testgame import Game
+from testgame import Tile
 
 
 def input_game_size():

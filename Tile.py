@@ -16,12 +16,9 @@ class Tile:
         dim = self.dimension
         row = self.row
         col = self.column
-        h = self.h
-        return str(f"<Tile> label:{lab}({car}), position:({dim}){row},{col} H:{h}")
-
-    def h(self):
-        row_dimension = self.row * self.dimension
-        return abs(self.label - self.column - row_dimension - 1)
+        row_dimension = row * dim
+        h = abs(lab - col - row_dimension - 1)
+        return f"<Tile> label:{lab}({car}), position:({dim}){row},{col} H:{h}"
 
     def move_to(self, row, column):
         self.row = row

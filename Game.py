@@ -18,7 +18,7 @@ class Game:
         self.shuffle(self.shuffle_default)              # give the tile-grid a shuffle
 
     def __repr__(self):
-        print_string = str()
+        print_string = ""
         for x in range(self.dimension):
             print_string += "\t"
             for y in range(self.dimension):
@@ -54,7 +54,8 @@ class Game:
     def get_h_by_label(self, label):
         for tile in self.tiles:
             if tile.label == label:
-                return tile.h()
+                row_dimension = tile.row * tile.dimension
+                return abs(tile.label - tile.column - row_dimension - 1)
         return False
 
     def get_label(self, row, column):
@@ -112,13 +113,23 @@ class Game:
         return valid_moves
 
     def h(self):
-        return sum(tile.h() for tile in self.tiles)
+        return sum(self.get_h_by_label(tile.label) for tile in self.tiles)
 
     def import_tiles(self, tiles):
         self.tiles = tiles
 
     def is_solved(self):
         return self.solution == self.get_labels_as_list()
+
+    def print_tile_set(self):
+        for tile in self.tiles:
+            lab = tile.label
+            car = tile.cardinal
+            dim = tile.dimension
+            row = tile.row
+            col = tile.column
+            h = self.get_h_by_label(tile.label)
+            print(f"<Tile> label:{lab}({car}), position:({dim}){row},{col} H:{h}")
 
     def set_tile_position(self, label, row, column):
         for tile in self.tiles:

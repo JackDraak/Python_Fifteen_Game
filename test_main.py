@@ -10,17 +10,12 @@ import pdb  # pdb.set_trace()
 
 
 class TestTile(TestCase):
-    def test_h(self):
-        tile = Tile(1, 0, 0, 3)
-        self.assertEqual(tile.h(), 0)
-        tile = Tile(9, 0, 0, 3)
-        self.assertEqual(tile.h(), 8)
-
     def test_move_to(self):
         tile = Tile(1, 0, 0, 3)
         tile.move_to(1, 0)
         self.assertEqual(tile.row, 1)
         self.assertEqual(tile.column, 0)
+        self.assertNotEqual(tile.dimension, 4)
 
     def test_set(self):
         tile = Tile(1, 0, 0, 3)
@@ -28,6 +23,7 @@ class TestTile(TestCase):
         self.assertEqual(tile.label, 9)
         self.assertEqual(tile.row, 8)
         self.assertEqual(tile.column, 7)
+        self.assertNotEqual(tile.cardinal, 2)
 
 
 class TestGame(TestCase):

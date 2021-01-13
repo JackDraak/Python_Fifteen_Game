@@ -3,6 +3,7 @@
 # (C) 2021 Jack Draak
 
 from Game import Game
+# import pdb
 
 
 def input_game_size():
@@ -71,4 +72,14 @@ def quit_game():
 
 
 if __name__ == '__main__':
+    # pdb.set_trace()
     play(Game(input_game_size()))
+    # g = Game(3)
+    # print(g.get_label_h_pairs())
+    # print(g)
+    # for tile in g.tiles:
+    #     print(tile)
+    # print()
+    # g.tiles = g.generate_tiles(3)
+    # g.print_tile_set()
+    # print(g)

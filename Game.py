@@ -7,15 +7,16 @@ import random
 
 
 class Game:
-    def __init__(self, dimension):
+    def __init__(self, dimension: int, shuffled: bool):
         entropy_factor = 100
         self.dimension = dimension
         self.blank_label = dimension * dimension
         self.blank_position = dimension - 1, dimension - 1
         self.shuffle_default = dimension * entropy_factor
-        self.tiles = self.generate_tiles(dimension)     # populate a fresh set of game tiles
-        self.solution = self.get_labels_as_list()       # store the win state (the un-shuffled matrix)
-        self.shuffle(self.shuffle_default)              # give the tile-grid a shuffle
+        self.solution = list(range(1, self.blank_label + 1))
+        self.tiles = self.generate_tiles(dimension)
+        if shuffled:
+            self.shuffle(self.shuffle_default)
 
     def __repr__(self):
         print_string = ""
@@ -30,9 +31,10 @@ class Game:
             print_string += "\n"
         return print_string
 
+    # TODO fix or replace this function; it creates Game objects that lose state (extra Tile sans properties, post-move)
     def duplicate(self):
-        duplicate_game = Game(self.dimension)
-        duplicate_game.import_tiles(self.export_tiles())
+        duplicate_game = Game(self.dimension, False)
+        duplicate_game.import_tiles(self.export_tiles())  # issues may lie here with export/import?
         return duplicate_game
 
     def export_tiles(self):
@@ -42,7 +44,7 @@ class Game:
         return tiles
 
     @staticmethod
-    def generate_tiles(dimension):
+    def generate_tiles(dimension: int):
         tiles = list()
         label = 0
         for row in range(dimension):
@@ -51,28 +53,27 @@ class Game:
                 tiles.append(Tile(label, row, column, dimension))
         return tiles
 
-    def get_h_by_label(self, label):
+    def get_distance(self, label: int):
         for tile in self.tiles:
             if tile.label == label:
-                row_dimension = tile.row * tile.dimension
-                return abs(tile.label - tile.column - row_dimension - 1)
+                return tile.distance()
         return False
 
-    def get_label(self, row, column):
-        for tile in self.tiles:
-            if tile.row == row and tile.column == column:
-                return tile.label
-
-    def get_label_h_pairs(self):
+    def get_distance_set(self):
         label_pairs = list()
         for row in range(self.dimension):
             for column in range(self.dimension):
                 pair = list()
                 label = self.get_label(row, column)
-                this_pair = label, self.get_h_by_label(label)
+                this_pair = label, self.get_distance(label)
                 pair.append(this_pair)
                 label_pairs.append(pair)
         return label_pairs
+
+    def get_label(self, row: int, column: int):
+        for tile in self.tiles:
+            if tile.row == row and tile.column == column:
+                return tile.label
 
     def get_labels_as_list(self):                       # return tile-set labels as a 1D array
         tiles = list()
@@ -90,7 +91,7 @@ class Game:
             tiles.append(rows)
         return tiles
 
-    def get_position(self, label):
+    def get_position(self, label: int):
         for tile in self.tiles:
             if tile.label == label:
                 return tile.row, tile.column
@@ -112,14 +113,15 @@ class Game:
             valid_moves.remove(self.blank_label)
         return valid_moves
 
-    def h(self):
-        return sum(self.get_h_by_label(tile.label) for tile in self.tiles)
-
-    def import_tiles(self, tiles):
+    def import_tiles(self, tiles: list):
+        self.tiles = list()
         self.tiles = tiles
 
     def is_solved(self):
         return self.solution == self.get_labels_as_list()
+
+    def net_distance(self):
+        return sum(tile.distance() for tile in self.tiles)
 
     def print_tile_set(self):
         for tile in self.tiles:
@@ -128,28 +130,28 @@ class Game:
             dim = tile.dimension
             row = tile.row
             col = tile.column
-            h = self.get_h_by_label(tile.label)
+            h = self.get_distance(tile.label)
             print(f"<Tile> label:{lab}({car}), position:({dim}){row},{col} H:{h}")
 
-    def set_tile_position(self, label, row, column):
+    def set_tile_position(self, label: int, row: int, column: int):
         for tile in self.tiles:
             if tile.label == label:
                 tile.move_to(row, column)
                 return True
         return False
 
-    def shuffle(self, cycles):
+    def shuffle(self, moves: int):
         last_move = int()
-        while cycles > 0:
+        while moves > 0:
             options = self.get_valid_moves()
             if options.__contains__(last_move):
                 options.remove(last_move)
             random_move = options[random.randint(0, len(options) - 1)]
             self.slide_tile(random_move)
             last_move = random_move
-            cycles -= 1
+            moves -= 1
 
-    def slide_tile(self, label):
+    def slide_tile(self, label: int):
         if self.get_valid_moves().__contains__(label):
             this_blank_position = self.blank_position
             this_tile_pos = self.get_position(label)
@@ -160,6 +162,6 @@ class Game:
                 print(f"\n{self}Game.set_tile_position({self.blank_label},{this_tile_pos[0]},{this_tile_pos[1]}) FAIL")
                 return False
             else:
-                self.blank_position = this_tile_pos[0], this_tile_pos[1]  # update self.blank_position
+                self.blank_position = this_tile_pos[0], this_tile_pos[1]
                 return True
         return False

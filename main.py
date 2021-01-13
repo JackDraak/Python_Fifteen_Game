@@ -3,7 +3,7 @@
 # (C) 2021 Jack Draak
 
 from Game import Game
-# import pdb
+import pdb
 
 
 def input_game_size():
@@ -28,7 +28,7 @@ def input_game_size():
     return size
 
 
-def input_shuffle(game):
+def input_shuffle(game: Game):
     print("*** Congratulations, you solved the puzzle! ***\n")
     print(game)
     shuffles = ""
@@ -45,7 +45,7 @@ def input_shuffle(game):
             game.shuffle(int(shuffles))
 
 
-def input_turn(game):
+def input_turn(game: Game):
     print(game)
     player_move = input("Please, enter the label of the tile you would like to push into the gap.\n" +
                         f"Valid tiles to move: {game.get_valid_moves()} ")
@@ -59,7 +59,7 @@ def input_turn(game):
         print(f"Unable to move tile {player_move}...\n")
 
 
-def play(game):
+def play(game: Game):
     while True:
         input_turn(game)
         if game.is_solved():
@@ -72,14 +72,5 @@ def quit_game():
 
 
 if __name__ == '__main__':
-    # pdb.set_trace()
-    play(Game(input_game_size()))
-    # g = Game(3)
-    # print(g.get_label_h_pairs())
-    # print(g)
-    # for tile in g.tiles:
-    #     print(tile)
-    # print()
-    # g.tiles = g.generate_tiles(3)
-    # g.print_tile_set()
-    # print(g)
+    pdb.set_trace()
+    play(Game(input_game_size(), True))

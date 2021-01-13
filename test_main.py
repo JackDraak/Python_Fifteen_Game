@@ -8,7 +8,7 @@ from Game import Game
 
 
 class TestTile(TestCase):
-    def test_h(self):
+    def test_distance(self):
         tile = Tile(1, 0, 0, 3)
         self.assertEqual(tile.distance(), 0)
         tile = Tile(9, 0, 0, 3)

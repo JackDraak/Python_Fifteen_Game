@@ -31,10 +31,14 @@ class Game:
             print_string += "\n"
         return print_string
 
+    def directional_move(self, direction: tuple):
+        delta = (direction[0] + self.blank_position[0]), (direction[1] + self.blank_position[1])
+        return self.get_label(delta[0], delta[1])           # Return tile.label based on position delta.
+
     # TODO fix or replace this function; it creates Game objects that lose state (extra Tile sans properties, post-move)
     def duplicate(self):
         duplicate_game = Game(self.dimension, False)
-        duplicate_game.import_tiles(self.export_tiles())  # issues may lie here with export/import?
+        duplicate_game.import_tiles(self.export_tiles())    # issues may lie here with export/import?
         return duplicate_game
 
     def export_tiles(self):
@@ -75,14 +79,14 @@ class Game:
             if tile.row == row and tile.column == column:
                 return tile.label
 
-    def get_labels_as_list(self):                       # return tile-set labels as a 1D array
+    def get_labels_as_list(self):                           # return tile-set labels as a 1D array.
         tiles = list()
         for row in range(self.dimension):
             for column in range(self.dimension):
                 tiles.append(self.get_label(row, column))
         return tiles
 
-    def get_labels_as_matrix(self):                     # return tile-set labels as a 2D array
+    def get_labels_as_matrix(self):                         # return tile-set labels as a 2D array.
         tiles = list()
         for row in range(self.dimension):
             rows = list()
@@ -101,15 +105,15 @@ class Game:
         blank_row, blank_column = self.blank_position
         for tile in self.tiles:
 
-            if tile.row == blank_row:                   # Select horizontal neighbors
+            if tile.row == blank_row:                       # Select horizontal neighbors.
                 if tile.column + 1 == blank_column or tile.column - 1 == blank_column:
                     valid_moves.append(tile.label)
 
-            if tile.column == blank_column:             # Select vertical neighbors
+            if tile.column == blank_column:                 # Select vertical neighbors.
                 if tile.row + 1 == blank_row or tile.row - 1 == blank_row:
                     valid_moves.append(tile.label)
 
-        if valid_moves.__contains__(self.blank_label):  # Trim blank-tile from set
+        if valid_moves.__contains__(self.blank_label):      # Trim blank-tile from set.
             valid_moves.remove(self.blank_label)
         return valid_moves
 
@@ -130,8 +134,8 @@ class Game:
             dim = tile.dimension
             row = tile.row
             col = tile.column
-            h = self.get_distance(tile.label)
-            print(f"<Tile> label:{lab}({car}), position:({dim}){row},{col} H:{h}")
+            dis = self.get_distance(tile.label)
+            print(f"<Tile> label:{lab}({car}), position:({dim}){row},{col} distance:{dis}")
 
     def set_tile_position(self, label: int, row: int, column: int):
         for tile in self.tiles:
@@ -150,15 +154,16 @@ class Game:
             self.slide_tile(random_move)
             last_move = random_move
             moves -= 1
+        return True
 
     def slide_tile(self, label: int):
         if self.get_valid_moves().__contains__(label):
             this_blank_position = self.blank_position
             this_tile_pos = self.get_position(label)
-            if not self.set_tile_position(label, this_blank_position[0], this_blank_position[1]):   # set pos of tile
+            if not self.set_tile_position(label, this_blank_position[0], this_blank_position[1]):   # Set pos of tile.
                 print(f"\n{self}Game.set_tile_position({label},{this_blank_position[0]},{this_blank_position[1]}) FAIL")
                 return False
-            if not self.set_tile_position(self.blank_label, this_tile_pos[0], this_tile_pos[1]):    # set pos of blank
+            if not self.set_tile_position(self.blank_label, this_tile_pos[0], this_tile_pos[1]):    # Set pos of blank.
                 print(f"\n{self}Game.set_tile_position({self.blank_label},{this_tile_pos[0]},{this_tile_pos[1]}) FAIL")
                 return False
             else:

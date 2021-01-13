@@ -3,7 +3,13 @@
 # (C) 2021 Jack Draak
 
 from Game import Game
-import pdb
+
+
+def command_check(command: str):
+    if command == "":
+        pass
+    elif command.lower()[0] == "q":
+        quit_game()
 
 
 def input_game_size():
@@ -16,10 +22,9 @@ def input_game_size():
     valid_input = False
     while not valid_input:
         grid_size = input(f"please choose a grid size from {size_min} to {size_max} [default: {size_default}] ")
+        command_check(grid_size)
         if grid_size == "":
             valid_input = True
-        elif grid_size.lower()[0] == "q":
-            quit_game()
         elif grid_size.isdigit():
             size = int(grid_size)
             if size_min <= size <= size_max:
@@ -34,11 +39,10 @@ def input_shuffle(game: Game):
     shuffles = ""
     while not shuffles.isdigit():
         shuffles = input(f"How many times would you like to shuffle? [default: {game.shuffle_default}] \n")
+        command_check(shuffles)
         if shuffles == "":
             game.shuffle(game.shuffle_default)
             break
-        elif shuffles.lower()[0] == "q":
-            quit_game()
         elif not shuffles.isdigit():
             pass
         else:
@@ -49,10 +53,8 @@ def input_turn(game: Game):
     print(game)
     player_move = input("Please, enter the label of the tile you would like to push into the gap.\n" +
                         f"Valid tiles to move: {game.get_valid_moves()} ")
+    command_check(player_move)
     print()
-    if not player_move == "":
-        if player_move.lower()[0] == "q":
-            quit_game()
     if not player_move.isdigit():
         print("Please, input a valid tile number to move...\n")
     elif not game.slide_tile(int(player_move)):
@@ -72,5 +74,4 @@ def quit_game():
 
 
 if __name__ == '__main__':
-    pdb.set_trace()
-    play(Game(input_game_size(), True))
+    play(Game(input_game_size(), True))  # Play a shuffled (True) Game of user-defined dimension

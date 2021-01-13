@@ -38,14 +38,14 @@ class TestGame(TestCase):
         game_b = game_a.duplicate()
         self.assertTrue(game_a.get_labels_as_list() == game_b.get_labels_as_list())
 
-    def test_get_label_h_pairs(self):
+    def test_get_distance_set(self):
         ordered_tiles = [[(1, 0)], [(2, 0)], [(3, 0)], [(4, 0)], [(5, 0)], [(6, 0)], [(7, 0)], [(8, 0)], [(9, 0)]]
         game = Game(3, False)
         self.assertEqual(game.get_distance_set(), ordered_tiles)
         game = Game(3, True)
         self.assertNotEqual(game.get_distance_set(), ordered_tiles)
 
-    def test_h(self):
+    def test_net_distance(self):
         game = Game(3, False)
         self.assertEqual(game.net_distance(), 0)
         game = Game(3, True)

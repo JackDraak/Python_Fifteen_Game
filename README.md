@@ -11,7 +11,8 @@ The code is not perfect, but I was also itching to get a _GUI mode_ going, and s
   <pre>
   audio         [folder]  
   images        [folder]  
-  GUI.py        GUI version of the basic 15 puzzle. [Click the '1' tile on a solved grid to re-shuffle.]
+  GUI.py        GUI version of the basic 15 puzzle. 
+                (Click the '1' tile on a solved grid to re-shuffle.)
   Game.py       Game class: the game model.
   README.md     This document.
   Tile.py       Tile class: struct of tile properties.

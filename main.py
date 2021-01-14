@@ -2,6 +2,7 @@
 # the classic game "Fifteen", for the console:
 # (C) 2021 Jack Draak
 
+
 from Game import Game
 
 
@@ -11,13 +12,13 @@ def command_check(command: str):
         return ""
     elif command.lower()[0] == "q":     # Quit()
         quit_game()
-    elif command.lower()[0] == "a":     # Move blank left
+    elif command.lower()[0] == "a":     # Move blank left   (tile on left takes blank position)
         direction = (0, -1)
-    elif command.lower()[0] == "d":     # Move blank right
+    elif command.lower()[0] == "d":     # Move blank right  (tile on right takes blank position)
         direction = (0, 1)
-    elif command.lower()[0] == "w":     # Move blank up
+    elif command.lower()[0] == "w":     # Move blank up     (tile above takes blank position)
         direction = (-1, 0)
-    elif command.lower()[0] == "s":     # Move blank down
+    elif command.lower()[0] == "s":     # Move blank down   (tile below takes blank position)
         direction = (1, 0)
     if direction != (0, 0):
         return direction
@@ -103,6 +104,5 @@ def quit_game():
 
 
 if __name__ == '__main__':
-    play(Game(input_game_size(), True))  # Play a shuffled (True) Game of user-defined dimension
-
+    play(Game(input_game_size(), True))  # Console version
 

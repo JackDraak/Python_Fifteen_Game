@@ -1,4 +1,4 @@
-import main
+from Game import Game
 import pygame
 import time
 
@@ -35,7 +35,7 @@ def frame_update():
     if click == (1, 0, 0):
         pygame.mixer.Sound.play(click_sound)
         clock.tick(fps)
-        time.sleep(0.12)
+        time.sleep(0.2)
         mouse_x, mouse_y = pygame.mouse.get_pos()
         tile_pos_x = mouse_x // tile_dimension
         tile_pos_y = mouse_y // tile_dimension
@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
     black = (0, 0, 0)
     white = (255, 255, 255)
-    grey = (128, 128, 128)
+    grey = (100, 100, 100)
     red = (200, 0, 0)
     green = (0, 200, 0)
     yellow = (200, 200, 0)
@@ -76,9 +76,9 @@ if __name__ == '__main__':
     magenta = (200, 0, 200)
     margin = 5
 
-    # TODO add a GUI feature for selecting a different sized game.
-    this_dimension = 4
-    g = main.Game(this_dimension, True)                         # A dimension of 4 is the default matrix for Fifteen.
+    # TODO add a GUI feature for selecting a different sized game. Suggested: add dynamic (moving) tiles, first.
+    this_dimension = 4  # A dimension of 4 is the default matrix for Fifteen.
+    g = Game(this_dimension, True)
     tile_dimension = (width - (margin * 2 * g.dimension)) // g.dimension
     rows = g.dimension
     label = 0
@@ -89,7 +89,7 @@ if __name__ == '__main__':
     win_sound = pygame.mixer.Sound("audio/tada.wav")
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Python 15 Puzzle")
-    icon = pygame.image.load('images/launch.png').convert()     # https://www.flaticon.com/authors/icongeek26
+    icon = pygame.image.load('images/launch.png').convert()  # https://www.flaticon.com/authors/icongeek26
     pygame.display.set_icon(icon)
     clock = pygame.time.Clock()
     font = pygame.font.SysFont(None, 60)

@@ -9,13 +9,15 @@ The code is not perfect, but I was also itching to get a _GUI mode_ going, and s
 
 ## Files:
   <pre>
-  audio         [folder]  
-  images        [folder]  
-  GUI.py        GUI version of the basic 15 puzzle. 
-                (Click the '1' tile on a solved grid to re-shuffle.)
-  Game.py       Game class: the game model.
-  README.md     This document.
-  Tile.py       Tile class: struct of tile properties.
-  main.py       Enhanced Console version of the 15 puzzle.
-  test_main.py  Unit tests for Game and Tile classes.
+  audio                     [folder]  
+  images                    [folder]
+  console_controller.py     <em>Enhanced Console version of the 15 puzzle.</em>
+  Game.py                   Game class: the game model.
+  generate_ML_data.py       Produce M.L. training datasets.
+  GUI_controller.py         <em>GUI version of the basic 15 puzzle.</em> 
+                            (Click the '1' tile on a solved grid to re-shuffle.)
+  README.md                 This document.
+  Tile.py                   Tile class: struct of tile properties.
+  unit_tests.py             Unit tests for Game and Tile classes.
+  usage.py                  Generic explainer for non-executable modules.
   </pre>

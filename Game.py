@@ -1,9 +1,6 @@
-# Playing around with Python 3, continued...
-# the classic game "Fifteen", for the console:
-# (C) 2021 Jack Draak
-
 from Tile import Tile
 import random
+import usage
 
 
 class Game:
@@ -57,7 +54,7 @@ class Game:
                 tiles.append(Tile(label, row, column, dimension))
         return tiles
 
-    def get_distance(self, label: int):
+    def get_distance_by_label(self, label: int):
         for tile in self.tiles:
             if tile.label == label:
                 return tile.distance()
@@ -69,10 +66,13 @@ class Game:
             for column in range(self.dimension):
                 pair = list()
                 label = self.get_label(row, column)
-                this_pair = label, self.get_distance(label)
+                this_pair = label, self.get_distance_by_label(label)
                 pair.append(this_pair)
                 label_pairs.append(pair)
         return label_pairs
+
+    def get_distance_sum(self):
+        return sum(tile.distance() for tile in self.tiles)
 
     def get_label(self, row: int, column: int):
         for tile in self.tiles:
@@ -124,9 +124,6 @@ class Game:
     def is_solved(self):
         return self.solution == self.get_labels_as_list()
 
-    def net_distance(self):
-        return sum(tile.distance() for tile in self.tiles)
-
     def print_tile_set(self):
         for tile in self.tiles:
             lab = tile.label
@@ -134,7 +131,7 @@ class Game:
             dim = tile.dimension
             row = tile.row
             col = tile.column
-            dis = self.get_distance(tile.label)
+            dis = self.get_distance_by_label(tile.label)
             print(f"<Tile> label:{lab}({car}), position:({dim}){row},{col} distance:{dis}")
 
     def set_tile_position(self, label: int, row: int, column: int):
@@ -170,3 +167,7 @@ class Game:
                 self.blank_position = this_tile_pos[0], this_tile_pos[1]
                 return True
         return False
+
+
+if __name__ == '__main__':
+    usage.explain()

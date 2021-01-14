@@ -1,24 +1,19 @@
-# Playing around with Python 3, continued...
-# the classic game "Fifteen", for the console:
-# (C) 2021 Jack Draak
-
-
 from Game import Game
 
 
 def command_check(command: str):
     direction = (0, 0)
-    if command == "":                   # Select default behaviour
+    if command == "":                   # Select default behaviour:
         return ""
-    elif command.lower()[0] == "q":     # Quit()
+    elif command.lower()[0] == "q":     # Quit.
         quit_game()
-    elif command.lower()[0] == "a":     # Move blank left   (tile on left takes blank position)
+    elif command.lower()[0] == "a":     # Move blank left.  (tile on left takes blank position)
         direction = (0, -1)
-    elif command.lower()[0] == "d":     # Move blank right  (tile on right takes blank position)
+    elif command.lower()[0] == "d":     # Move blank right. (tile on right takes blank position)
         direction = (0, 1)
-    elif command.lower()[0] == "w":     # Move blank up     (tile above takes blank position)
+    elif command.lower()[0] == "w":     # Move blank up.    (tile above takes blank position)
         direction = (-1, 0)
-    elif command.lower()[0] == "s":     # Move blank down   (tile below takes blank position)
+    elif command.lower()[0] == "s":     # Move blank down.  (tile below takes blank position)
         direction = (1, 0)
     if direction != (0, 0):
         return direction
@@ -27,8 +22,8 @@ def command_check(command: str):
 
 def input_game_size():
     size_default = 4                    # for the classic '15 puzzle', use a grid with a dimension of 4
-    size_max = 31                       # grids with dimension >31 have >1000 tiles, requires re-formatting
-    size_min = 3                        # grids with dimension <3 are not playable
+    size_max = 31                       # grids with dimension >31 have >1000 tiles, would require re-formatting
+    size_min = 3                        # grids with dimension <3 are not functionally playable
     size = size_default
     print("\nGoal: slide the game tiles into the open position, 1-by-1, to re-order them. [Or (q)uit at any prompt]")
     print("To play the classic tile game, '15', ", end="")
@@ -104,5 +99,4 @@ def quit_game():
 
 
 if __name__ == '__main__':
-    play(Game(input_game_size(), True))  # Console version
-
+    play(Game(input_game_size(), True))

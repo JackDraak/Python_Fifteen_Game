@@ -1,6 +1,5 @@
-# Playing around with Python 3, continued...
-# the classic game "Fifteen", for the console:
-# (C) 2021 Jack Draak
+import usage
+
 
 class Tile:
     def __init__(self, label: int, row: int, column: int, dimension: int):
@@ -16,8 +15,8 @@ class Tile:
         dim = self.dimension
         row = self.row
         col = self.column
-        h = self.distance()
-        return f"<Tile> label:{lab}({car}), position:({dim}){row},{col} H:{h}"
+        dis = self.distance()
+        return f"<Tile> label:{lab}({car}), position:({dim}){row},{col} distance:{dis}"
 
     def distance(self):
         lab = self.label
@@ -36,3 +35,7 @@ class Tile:
         self.label = label
         self.row = row
         self.column = column
+
+
+if __name__ == '__main__':
+    usage.explain()

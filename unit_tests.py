@@ -1,13 +1,10 @@
-# Playing around with Python 3, continued...
-# the classic game "Fifteen", for the console:
-# (C) 2021 Jack Draak
-
+import unittest
 from unittest import TestCase
 from Tile import Tile
 from Game import Game
 
 
-class TestTile(TestCase):
+class test_Tile_class(TestCase):
     def test_distance(self):
         tile = Tile(1, 0, 0, 3)
         self.assertEqual(tile.distance(), 0)
@@ -30,7 +27,7 @@ class TestTile(TestCase):
         self.assertNotEqual(tile.cardinal, 2)
 
 
-class TestGame(TestCase):
+class test_Game_class(TestCase):
     def test_duplicate(self):
         game_a = Game(3, True)
         game_b = Game(3, True)
@@ -47,9 +44,9 @@ class TestGame(TestCase):
 
     def test_net_distance(self):
         game = Game(3, False)
-        self.assertEqual(game.net_distance(), 0)
+        self.assertEqual(game.get_distance_sum(), 0)
         game = Game(3, True)
-        self.assertNotEqual(game.net_distance(), 0)
+        self.assertNotEqual(game.get_distance_sum(), 0)
 
     def test_is_solved(self):
         game = Game(3, True)
@@ -74,3 +71,7 @@ class TestGame(TestCase):
         self.assertTrue(game.slide_tile(5))
         self.assertTrue(game.slide_tile(2))
         self.assertTrue(game.slide_tile(1))
+
+
+if __name__ == '__main__':
+    unittest.main()

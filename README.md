@@ -7,6 +7,11 @@ At this point, the _console version_ is fairly polished, and offers not only the
 
 The code is not perfect, but I was also itching to get a _GUI mode_ going, and so now if you run from __GUI.py__ a crude PyGame interface allows the game to be played with a pointer device.
 
+#### Work in Progress:
+This seems like a suitable vehicle for a sort of machine-learning 'Hello World!' project.  I won't bore you with the story behind the choice, but I would like to apply one or more forms of pathfinding, artificial intelligence, or machine learning against this game model, for self-edification. If you happen to have found it, may it aid in your own self-edification.
+
+
+
 ## Files:
   <pre>
   audio                     [folder]  

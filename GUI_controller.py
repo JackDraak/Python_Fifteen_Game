@@ -44,7 +44,8 @@ def frame_update():
         if tile_pos_y == 0 and tile_pos_x == 0 and g.is_solved():
             g.shuffle(g.shuffle_default)
             won = False
-        g.slide_tile(label)
+        else:
+            g.slide_tile(label)
         if g.is_solved() and not won:
             pygame.mixer.Sound.play(win_sound)
             won = True

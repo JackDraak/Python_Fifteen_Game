@@ -34,6 +34,7 @@ This seems like a suitable vehicle for a sort of machine-learning 'Hello World!'
 
 ## Dependencies:
     14 Jan 2021: v1.0.0-pre-ML
-      GUI_controller.py     dep: PyGame    (using 2.0.1)       
-      generate_ML_data.py   dep: NumPy     (using 1.19.5)
+      Python interpreter                    (using 3.7.8)
+      GUI_controller.py     dep: PyGame     (using 2.0.1)       
+      generate_ML_data.py   dep: NumPy      (using 1.19.5)
 

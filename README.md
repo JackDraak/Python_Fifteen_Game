@@ -26,3 +26,8 @@ This seems like a suitable vehicle for a sort of machine-learning 'Hello World!'
   unit_tests.py             Unit tests for Game and Tile classes.
   usage.py                  Generic explainer for non-executable modules.
   </pre>
+
+## Release: 
+
+14 Jan 2021: v1.0.0-pre-ML
+<https://github.com/JackDraak/Python_Fifteen_Game/releases/tag/v1.0.0-pre-ML>

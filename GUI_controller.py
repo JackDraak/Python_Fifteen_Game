@@ -27,7 +27,7 @@ def draw_tiles():
 
 
 def frame_update():
-    global run, label
+    global won, run, label
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
@@ -43,9 +43,11 @@ def frame_update():
         print(f"Mouse-click: row, column ({tile_pos_x}, {tile_pos_y}). Target tile label: {label}")
         if tile_pos_y == 0 and tile_pos_x == 0 and g.is_solved():
             g.shuffle(g.shuffle_default)
+            won = False
         g.slide_tile(label)
-        if g.is_solved():
+        if g.is_solved() and not won:
             pygame.mixer.Sound.play(win_sound)
+            won = True
 
 
 def play_game():
@@ -83,6 +85,7 @@ if __name__ == '__main__':
     rows = g.dimension
     label = 0
     run = True
+    won = False
     pygame.init()
     pygame.mixer.init()
     click_sound = pygame.mixer.Sound("audio/click.wav")

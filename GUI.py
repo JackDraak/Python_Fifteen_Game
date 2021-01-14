@@ -48,6 +48,18 @@ def frame_update():
             pygame.mixer.Sound.play(win_sound)
 
 
+def play_game():
+    global run
+    run = True
+    while run:
+        clock.tick(fps)
+        frame_update()
+        screen.fill(cyan)
+        draw_grid()
+        draw_tiles()
+        pygame.display.update()
+
+
 if __name__ == '__main__':
     width = 600
     height = 600
@@ -65,27 +77,20 @@ if __name__ == '__main__':
     margin = 5
 
     # TODO add a GUI feature for selecting a different sized game.
-    g = main.Game(3, True)  # A dimension of 3 is the default matrix for Fifteen.
+    this_dimension = 4
+    g = main.Game(this_dimension, True)                         # A dimension of 4 is the default matrix for Fifteen.
     tile_dimension = (width - (margin * 2 * g.dimension)) // g.dimension
     rows = g.dimension
     label = 0
-
+    run = True
     pygame.init()
     pygame.mixer.init()
     click_sound = pygame.mixer.Sound("audio/click.wav")
     win_sound = pygame.mixer.Sound("audio/tada.wav")
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Python 15 Puzzle")
-    icon = pygame.image.load('images/launch.png').convert()  # https://www.flaticon.com/authors/icongeek26
+    icon = pygame.image.load('images/launch.png').convert()     # https://www.flaticon.com/authors/icongeek26
     pygame.display.set_icon(icon)
     clock = pygame.time.Clock()
     font = pygame.font.SysFont(None, 60)
-
-    run = True
-    while run:
-        clock.tick(fps)
-        frame_update()
-        screen.fill(cyan)
-        draw_grid()
-        draw_tiles()
-        pygame.display.update()
+    play_game()

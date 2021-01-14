@@ -27,7 +27,13 @@ This seems like a suitable vehicle for a sort of machine-learning 'Hello World!'
   usage.py                  Generic explainer for non-executable modules.
   </pre>
 
-## Release: 
-
+## Release:
 14 Jan 2021: v1.0.0-pre-ML
+
 <https://github.com/JackDraak/Python_Fifteen_Game/releases/tag/v1.0.0-pre-ML>
+
+## Dependencies:
+    14 Jan 2021: v1.0.0-pre-ML
+      GUI_controller.py     dep: PyGame    (using 2.0.1)       
+      generate_ML_data.py   dep: NumPy     (using 1.19.5)
+

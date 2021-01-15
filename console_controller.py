@@ -79,7 +79,7 @@ def play(game: Game):
             input_shuffle(game)
 
 
-def process_turn(game, player_move):
+def process_turn(game: Game, player_move):
     print()
     if type(player_move) == tuple:
         wasd_label = game.get_cardinal_label(player_move)

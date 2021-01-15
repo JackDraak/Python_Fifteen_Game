@@ -15,14 +15,14 @@ def draw_tiles():
     global label
     text_margin = (tile_dimension // 2) + (margin * 2)
     start = [text_margin, text_margin]
-    for x in range(g.dimension):
-        for y in range(g.dimension):
-            label = g.get_label(x, y)
+    for x in range(game.dimension):
+        for y in range(game.dimension):
+            label = game.get_label(x, y)
             img = font.render(str(label), True, black)
-            if label is not g.blank_label:
+            if label is not game.blank_label:
                 screen.blit(img, (start[0], start[1]))
             start[0] += tile_dimension + margin
-        start[0] -= (tile_dimension + margin) * g.dimension
+        start[0] -= (tile_dimension + margin) * game.dimension
         start[1] += tile_dimension + margin
 
 
@@ -31,7 +31,7 @@ def frame_update():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
-    click = pygame.mouse.get_pressed()
+    click = pygame.mouse.get_pressed(3)
     if click == (1, 0, 0):
         pygame.mixer.Sound.play(click_sound)
         clock.tick(fps)
@@ -39,14 +39,14 @@ def frame_update():
         mouse_x, mouse_y = pygame.mouse.get_pos()
         tile_pos_x = mouse_x // tile_dimension
         tile_pos_y = mouse_y // tile_dimension
-        label = g.get_label(tile_pos_y, tile_pos_x)
+        label = game.get_label(tile_pos_y, tile_pos_x)
         print(f"Mouse-click: row, column ({tile_pos_x}, {tile_pos_y}). Target tile label: {label}")
-        if tile_pos_y == 0 and tile_pos_x == 0 and g.is_solved():
-            g.shuffle(g.shuffle_default)
+        if tile_pos_y == 0 and tile_pos_x == 0 and game.is_solved():
+            game.shuffle(game.shuffle_default)
             won = False
         else:
-            g.slide_tile(label)
-        if g.is_solved() and not won:
+            game.slide_tile(label)
+        if game.is_solved() and not won:
             pygame.mixer.Sound.play(win_sound)
             won = True
 
@@ -81,9 +81,9 @@ if __name__ == '__main__':
 
     # TODO add a GUI feature for selecting a different sized game. Suggested: add dynamic (moving) tiles, first.
     this_dimension = 4  # A dimension of 4 is the default matrix for Fifteen.
-    g = Game(this_dimension, True)
-    tile_dimension = (width - (margin * 2 * g.dimension)) // g.dimension
-    rows = g.dimension
+    game = Game(this_dimension, True)
+    tile_dimension = (width - (margin * 2 * game.dimension)) // game.dimension
+    rows = game.dimension
     label = 0
     run = True
     won = False

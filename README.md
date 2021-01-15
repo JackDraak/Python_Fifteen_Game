@@ -38,3 +38,8 @@ This seems like a suitable vehicle for a sort of machine-learning 'Hello World!'
       GUI_controller.py     dep: PyGame     (using 2.0.1)       
       generate_ML_data.py   dep: NumPy      (using 1.19.5)
 
+### Footnote:
+    Playing around with Python 3, continued...
+    the classic game "Fifteen", for the *console:
+    [* now with a PyGame GUI controller]
+    (C) 2021 Jack Draak

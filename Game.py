@@ -28,14 +28,10 @@ class Game:
             print_string += "\n"
         return print_string
 
-    def directional_move(self, direction: tuple):
-        delta = (direction[0] + self.blank_position[0]), (direction[1] + self.blank_position[1])
-        return self.get_label(delta[0], delta[1])           # Return tile.label based on position delta.
-
     # TODO fix or replace this function; it creates Game objects that lose state (extra Tile sans properties, post-move)
     def duplicate(self):
         duplicate_game = Game(self.dimension, False)
-        duplicate_game.import_tiles(self.export_tiles())    # issues may lie here with export/import?
+        duplicate_game.import_tiles(self.export_tiles())    # Issues may lie here with export/import?
         return duplicate_game
 
     def export_tiles(self):
@@ -53,6 +49,10 @@ class Game:
                 label += 1
                 tiles.append(Tile(label, row, column, dimension))
         return tiles
+
+    def get_cardinal_label(self, direction: tuple):
+        delta = (direction[0] + self.blank_position[0]), (direction[1] + self.blank_position[1])
+        return self.get_label(delta[0], delta[1])           # Return tile.label based on position delta:blank
 
     def get_distance_by_label(self, label: int):
         for tile in self.tiles:
@@ -79,14 +79,14 @@ class Game:
             if tile.row == row and tile.column == column:
                 return tile.label
 
-    def get_labels_as_list(self):                           # return tile-set labels as a 1D array.
+    def get_labels_as_list(self):                           # Return tile-set labels as a 1D array.
         tiles = list()
         for row in range(self.dimension):
             for column in range(self.dimension):
                 tiles.append(self.get_label(row, column))
         return tiles
 
-    def get_labels_as_matrix(self):                         # return tile-set labels as a 2D array.
+    def get_labels_as_matrix(self):                         # Return tile-set labels as a 2D array.
         tiles = list()
         for row in range(self.dimension):
             rows = list()

@@ -3,16 +3,22 @@ import random
 
 
 class Frame:
-    def __init__(self, game: Game, turn: int):
+    def __init__(self, game: Game, turn: int, last_move: int):
         self.sequence = turn
         self.solved = [game.is_solved(), game.get_distance_sum()]
         self.label_list = game.get_labels_as_list()
         self.distance_list = game.get_distance_set()
         self.matrix = game.get_labels_as_matrix()
         self.valid_moves = game.get_valid_moves()
+        self.last_move = last_move
 
     def __repr__(self):
-        return_string = f"Turn: {self.sequence}, Solved: {self.solved[0]}, Net Distance: {self.solved[1]}\n"
+        if self.solved[0]:
+            s_string = ">---SOLVED---<"
+        else:
+            s_string = "(not solved)"
+        return_string = f"Turn: {self.sequence}, Move: {self.last_move}, "
+        return_string += f"{s_string}, Net Distance: {self.solved[1]}\n"
         return_string += f"Label Order: {self.label_list}\n"
         return_string += f"Distance List: {self.distance_list[:3]} ... {self.distance_list[-3:]}\n"
         return_string += f"Matrix: {self.matrix}\n"
@@ -25,7 +31,7 @@ def generate_training_set(dimension: int, turns: int):
     last_move = 0
     game = Game(dimension, False)
     while turns > 0:
-        path.append(Frame(game, turns))
+        path.append(Frame(game, turns, last_move))
         turns -= 1
         options = game.get_valid_moves()
         if options.__contains__(last_move):
@@ -42,7 +48,7 @@ if __name__ == '__main__':
         import path_controller as pc
         
         dimension = 4  # matrix size, 4 for a 'standard' game of fifteen
-        turn = 100     # the number of turns to shuffle into the path
+        turn = 10      # the number of turns to shuffle into the path
         path = pc.generate_training_set(dimension, turn)
         
         # 'Replay' the set from the final shuffle back to the first;

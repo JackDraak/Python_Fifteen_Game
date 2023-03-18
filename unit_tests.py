@@ -87,7 +87,7 @@ class test_Game_class(TestCase):
         self.assertTrue(game.is_solved())
 
     def test_slide_tile(self):
-        game = Game(3, False)                   # init game as a new (pre-shuffled) Game object, of dimension = 3
+        game = Game(3, False)                   # init game as a new (un-shuffled) Game object, of dimension = 3
         self.assertFalse(game.slide_tile(1))    # from an ordered matrix (of any size) tile 1 is always locked-in
         self.assertFalse(game.slide_tile(2))    # from an ordered matrix (of any size) tile 2 is always locked-in
         self.assertFalse(game.slide_tile(3))    # from an ordered matrix (of any size) tile 3 is always locked-in

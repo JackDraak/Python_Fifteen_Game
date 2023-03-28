@@ -7,3 +7,24 @@ At this point, the _console version_ is fairly polished, and offers not only the
 
 The code is not perfect, but I was also itching to get a _GUI mode_ going, and so now if you run from __GUI_controller.py__ a crude PyGame interface allows the game to be played with a pointer device.
 
+--
+28 Mar 2023
+--
+attempting to add an trainAI.py AI trainer. 
+will then require an AI_controller.py for the model to interface with the game, if further research is desired
+
+Core game:
+    Game.py
+    Tile.py
+
+Required interface for play (at least 1):
+    console_controller.py
+    GUI_controller.py
+    * AI_controller.py [TBA]
+
+Training interface (at least 1):
+    * trainAI_controller.py [deprecated]
+    * GUItrainAI_controller.py
+
+* dependencies:
+    tile_game_env.py

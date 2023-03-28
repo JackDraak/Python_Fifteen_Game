@@ -28,11 +28,11 @@ class Game:
             print_string += "\n"
         return print_string
 
-    # TODO fix or replace this function; it creates Game objects that lose state (extra Tile sans properties, post-move)
-    def duplicate(self):
-        duplicate_game = Game(self.dimension, False)
-        duplicate_game.import_tiles(self.export_tiles())    # Issues may lie here with export/import?
-        return duplicate_game
+    # # TODO fix or replace this function; it creates Game objects that lose state (extra Tile sans properties, post-move)
+    # def duplicate(self):
+    #     duplicate_game = Game(self.dimension, False)
+    #     duplicate_game.import_tiles(self.export_tiles())    # Issues may lie here with export/import?
+    #     return duplicate_game
 
     def export_tiles(self):
         tiles = list()

@@ -1,4 +1,3 @@
-import torch
 import gym
 import numpy as np
 from gym import spaces
@@ -17,9 +16,7 @@ class TileGameEnv(gym.Env):
         self.action_space = spaces.Discrete(4)  # Four possible actions: up, down, left, right
 
         # Define observation space
-        #self.observation_space = spaces.Box(low=0, high=game_size**2-1, shape=(game_size, game_size), dtype=torch.uint8)
         self.observation_space = spaces.Box(low=0, high=game_size**2-1, shape=(game_size, game_size), dtype=np.uint8)
-
 
     def step(self, action):
         # Apply the action to the game, update the state, and calculate the reward
@@ -37,12 +34,12 @@ class TileGameEnv(gym.Env):
             reward = -1
             done = False
 
-        return torch.tensor(new_state, dtype=torch.uint8), reward, done, {}
+        return np.array(new_state, dtype=np.uint8), reward, done, {}
 
     def reset(self):
         # Reset the game and return the initial state
         self.game = Game(self.game_size, True)
-        return torch.tensor(self.game.get_state(), dtype=torch.uint8)
+        return np.array(self.game.get_state(), dtype=np.uint8)
 
     def render(self, mode='human'):
         # Render the current game state

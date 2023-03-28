@@ -73,6 +73,7 @@ class Game:
 
     def get_distance_sum(self):
         return sum(tile.distance() for tile in self.tiles)
+    
 
     def get_label(self, row: int, column: int):
         for tile in self.tiles:
@@ -99,6 +100,13 @@ class Game:
         for tile in self.tiles:
             if tile.label == label:
                 return tile.row, tile.column
+
+    def get_state(self):
+        tiles = list()
+        for row in range(self.dimension):
+            for column in range(self.dimension):
+                tiles.append(self.get_label(row, column))
+        return tiles
 
     def get_valid_moves(self):
         valid_moves = list()

@@ -1,5 +1,4 @@
-#trainAI_controller.py
-import numpy as np
+import torch
 from tile_game_env import TileGameEnv, state_to_index
 
 # Parameters
@@ -9,11 +8,15 @@ alpha = 0.1  # learning rate
 gamma = 0.99  # discount factor
 epsilon = 0.1  # exploration rate
 
+# Check for GPU availability and set the device
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(device) # TODO consider removing 
+
 # Initialize the environment
 env = TileGameEnv(game_size)
 
 # Initialize the Q-table
-q_table = np.zeros((game_size ** 2, env.action_space.n))
+q_table = torch.zeros(game_size ** 2, env.action_space.n, device=device)
 
 # Training loop
 for episode in range(num_episodes):
@@ -21,17 +24,17 @@ for episode in range(num_episodes):
     done = False
 
     while not done:
-        if np.random.uniform(0, 1) < epsilon:
+        if torch.rand(1).item() < epsilon:
             action = env.action_space.sample()  # Explore
         else:
-            action = np.argmax(q_table[state_to_index(np.array(state))])  # Exploit
+            action = torch.argmax(q_table[state_to_index(torch.tensor(state, device=device))]).item()  # Exploit
         next_state, reward, done, _ = env.step(action)
 
-        state_index = state_to_index(np.array(state))
-        next_state_index = state_to_index(np.array(next_state))
-        
+        state_index = state_to_index(torch.tensor(state, device=device))
+        next_state_index = state_to_index(torch.tensor(next_state, device=device))
+
         # Update the Q-table (using vectorized operations)
-        q_table[state_index, action] += alpha * (reward + gamma * np.max(q_table[next_state_index]) - q_table[state_index, action])
+        q_table[state_index, action] += alpha * (reward + gamma * torch.max(q_table[next_state_index]) - q_table[state_index, action])
 
         state = next_state
 
@@ -42,4 +45,4 @@ for episode in range(num_episodes):
         print(f"Episode {episode} of {num_episodes}")
 
 # Save the Q-table for later use
-np.save("q_table.npy", q_table)
+torch.save(q_table, "q_table.pt")

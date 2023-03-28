@@ -1,22 +1,25 @@
-import numpy as np
+import torch
 import gym
+import numpy as np
 from gym import spaces
 from Game import Game
 from numba import jit
 
-# Create custom environment      
+# Create custom environment
 class TileGameEnv(gym.Env):
     def __init__(self, game_size):
         super(TileGameEnv, self).__init__()
 
         self.game_size = game_size
         self.game = Game(game_size, True)  # Pass 'True' to shuffle the game
-        
+
         # Define action space
         self.action_space = spaces.Discrete(4)  # Four possible actions: up, down, left, right
-        
+
         # Define observation space
+        #self.observation_space = spaces.Box(low=0, high=game_size**2-1, shape=(game_size, game_size), dtype=torch.uint8)
         self.observation_space = spaces.Box(low=0, high=game_size**2-1, shape=(game_size, game_size), dtype=np.uint8)
+
 
     def step(self, action):
         # Apply the action to the game, update the state, and calculate the reward
@@ -34,12 +37,12 @@ class TileGameEnv(gym.Env):
             reward = -1
             done = False
 
-        return new_state, reward, done, {}
+        return torch.tensor(new_state, dtype=torch.uint8), reward, done, {}
 
     def reset(self):
         # Reset the game and return the initial state
         self.game = Game(self.game_size, True)
-        return self.game.get_state()
+        return torch.tensor(self.game.get_state(), dtype=torch.uint8)
 
     def render(self, mode='human'):
         # Render the current game state

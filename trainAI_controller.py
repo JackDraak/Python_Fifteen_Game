@@ -1,3 +1,5 @@
+# deprecated 
+#
 #trainAI_controller.py
 import numpy as np
 from tile_game_env import TileGameEnv, state_to_index

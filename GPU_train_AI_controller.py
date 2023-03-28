@@ -27,18 +27,18 @@ for episode in range(num_episodes):
         if torch.rand(1).item() < epsilon:
             action = env.action_space.sample()  # Explore
         else:
-            action = torch.argmax(q_table[state_to_index(state_torch.cpu().numpy())]).item()  # Exploit
-            #action = torch.argmax(q_table[state_to_index(state_torch)]).item()  # Exploit
+            #action = torch.argmax(q_table[state_to_index(state_torch.cpu().numpy())]).item()  # Exploit
+            action = torch.argmax(q_table[state_to_index(state_torch)]).item()  # Exploit
         next_state, reward, done, _ = env.step(action)
         next_state_torch = torch.tensor(next_state, dtype=torch.uint8, device=device)
         
-        state_index = state_to_index(state_torch.cpu().numpy())
-        #state_index = state_to_index(state_torch)
+        #state_index = state_to_index(state_torch.cpu().numpy())
+        state_index = state_to_index(state_torch)
         next_state_index = state_to_index(next_state_torch)
 
         # Update the Q-table (using vectorized operations)
-        q_table[state_index, action] += alpha * (reward + gamma * torch.max(q_table[state_to_index(next_state_torch.cpu().numpy())]) - q_table[state_index, action])
-        #q_table[state_index, action] += alpha * (reward + gamma * torch.max(q_table[next_state_index]) - q_table[state_index, action])
+        #q_table[state_index, action] += alpha * (reward + gamma * torch.max(q_table[state_to_index(next_state_torch.cpu().numpy())]) - q_table[state_index, action])
+        q_table[state_index, action] += alpha * (reward + gamma * torch.max(q_table[next_state_index]) - q_table[state_index, action])
 
         state_torch = next_state_torch
 

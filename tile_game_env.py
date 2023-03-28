@@ -1,4 +1,5 @@
 import gym
+import torch
 import numpy as np
 from gym import spaces
 from Game import Game
@@ -48,8 +49,17 @@ class TileGameEnv(gym.Env):
         else:
             raise NotImplementedError
 
-    def close(self):
-        pass
+def close(self):
+    pass
+
+def state_to_index(state):
+    if isinstance(state, torch.Tensor):
+        state = state.cpu().numpy()
+
+    index = 0
+    for i in range(1, len(state)):
+        index = cantor_pair(index, state[i])
+    return index
 
 @jit(nopython=True)
 def cantor_pair(a, b):
@@ -76,10 +86,3 @@ def cantor_pair(a, b):
                 count2 += 1
         result *= factor ** (count1 - count2)
     return result
-
-@jit(nopython=True)
-def state_to_index(state):
-    index = 0
-    for i in range(1, len(state)):
-        index = cantor_pair(index, state[i])
-    return index

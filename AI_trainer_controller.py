@@ -5,7 +5,6 @@ import numpy as np
 import random
 from copy import deepcopy
 from Game import Game
-from typing import Tuple
 
 
 class QNetwork(nn.Module):
@@ -21,6 +20,7 @@ class QNetwork(nn.Module):
         x = self.fc2(x)
         return x
 
+
 class AI_trainer_controller:
     def __init__(self, game_dimension: int, learning_rate: float, gamma: float, epsilon: float):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -29,14 +29,34 @@ class AI_trainer_controller:
         self.learning_rate = learning_rate
         self.gamma = gamma
         self.epsilon = epsilon
-        self.q_network = QNetwork(game_dimension ** 2, 64, game_dimension ** 2).to(self.device)
+        self.q_network = QNetwork(37, 64, game_dimension ** 2).to(self.device) # updated for more parameters
+        # self.q_network = QNetwork((game_dimension ** 2) * 2 + game_dimension + 1, 64, game_dimension ** 2).to(self.device)
         self.optimizer = optim.Adam(self.q_network.parameters(), lr=learning_rate)
         self.loss_function = nn.MSELoss()
         self.memory = []
 
     def _game_state_to_tensor(self, game: Game) -> torch.Tensor:
-        state = game.get_state()
-        state = [float(x) for x in state]
+        state_1d = game.get_labels_as_list()    # Length 9
+        state_2d = game.get_labels_as_matrix()  # Length 9
+        distance_set = game.get_distance_set()  # Length 18
+        distance_sum = game.get_distance_sum()  # Length 1
+
+        # Flatten the state_2d
+        state_2d_flattened = [item for sublist in state_2d for item in sublist]
+
+        # Flatten the distance_set
+        distance_set_flattened = [item for sublist in distance_set for inner_list in sublist for item in inner_list]
+
+        # Combine all the features into a single list
+        state = state_1d + state_2d_flattened + distance_set_flattened + [distance_sum]
+
+        # # Print lengths of the features
+        # print(f"Length of state_1d: {len(state_1d)}")
+        # print(f"Length of state_2d_flattened: {len(state_2d_flattened)}")
+        # print(f"Length of distance_set_flattened: {len(distance_set_flattened)}")
+        # print(f"Length of distance_sum: 1")
+
+        state = np.array(state, dtype=np.float32)  # Convert the list to a NumPy array
         state = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
         return state
     
@@ -86,16 +106,22 @@ class AI_trainer_controller:
             game = Game(self.game_dimension, True)
             done = False
 
-        while not done:
-            state = deepcopy(game)
-            action = self._choose_action(game)
-            reward = -1 if not game.slide_tile(action) else 0
-            next_state = deepcopy(game)
-            done = game.is_solved()
+            while not done:
+                state = deepcopy(game)
+                action = self._choose_action(game)
+                game.slide_tile(action)
+                next_state = deepcopy(game)
+                done = game.is_solved()
 
-            self._store_transition(state, action, reward, next_state, done)
-            self._learn_from_memory()
-        if episode % 1 == 0: # TODO Adjust according to preference
+                if done:
+                    reward = 1
+                else:
+                    reward = -1
+
+                self._store_transition(state, action, reward, next_state, done)
+                self._learn_from_memory()
+
+        if episode % 2 == 0: # TODO Adjust according to preference
             print(f"Episode {episode}: Epsilon {self.epsilon}")                        
 
     def play(self) -> None:
@@ -117,7 +143,7 @@ if __name__ == "__main__":
     learning_rate = 0.001
     gamma = 0.95
     epsilon = 1.0
-    episodes = 1000
+    episodes = 2
     model_file_path = "Q_model.pth"
 
     ai_trainer = AI_trainer_controller(game_dimension, learning_rate, gamma, epsilon)
@@ -127,3 +153,4 @@ if __name__ == "__main__":
     # Load the model before playing
     ai_trainer.load_model(model_file_path)
     ai_trainer.play()
+

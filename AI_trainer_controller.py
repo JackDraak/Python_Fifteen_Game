@@ -22,18 +22,37 @@ class QNetwork(nn.Module):
 
 
 class AI_trainer_controller:
-    def __init__(self, game_dimension: int, learning_rate: float, gamma: float, epsilon: float):
+    def __init__(self, game_dimension: int, learning_rate: float, gamma: float, epsilon: float, min_epsilon: float, epsilon_decay: float, batch_size: int, buffer_size: int):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print("Device: ", self.device) # INFO
+        print("Device: ", self.device)
         self.game_dimension = game_dimension
         self.learning_rate = learning_rate
         self.gamma = gamma
         self.epsilon = epsilon
-        self.q_network = QNetwork(37, 64, game_dimension ** 2).to(self.device) # updated for more parameters
-        # self.q_network = QNetwork((game_dimension ** 2) * 2 + game_dimension + 1, 64, game_dimension ** 2).to(self.device)
+        self.min_epsilon = min_epsilon
+        self.epsilon_decay = epsilon_decay
+        self.batch_size = batch_size
+        self.buffer_size = buffer_size
+        self.q_network = QNetwork(37, 64, game_dimension ** 2).to(self.device)
         self.optimizer = optim.Adam(self.q_network.parameters(), lr=learning_rate)
         self.loss_function = nn.MSELoss()
         self.memory = []
+        
+# class AI_trainer_controller:
+#     def __init__(self, game_dimension: int, learning_rate: float, gamma: float, epsilon: float, buffer_size: int, min_epsilon: float, decay_factor: float):
+#         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#         print("Device: ", self.device) # INFO
+#         self.game_dimension = game_dimension
+#         self.learning_rate = learning_rate
+#         self.gamma = gamma
+#         self.epsilon = epsilon
+#         self.buffer_size = buffer_size
+#         self.min_epsilon = min_epsilon
+#         self.decay_factor = decay_factor
+#         self.q_network = QNetwork(37, 64, game_dimension ** 2).to(self.device)
+#         self.optimizer = optim.Adam(self.q_network.parameters(), lr=learning_rate)
+#         self.loss_function = nn.MSELoss()
+#         self.memory = []
 
     def _game_state_to_tensor(self, game: Game) -> torch.Tensor:
         state_1d = game.get_labels_as_list()    # Length 9
@@ -50,11 +69,11 @@ class AI_trainer_controller:
         # Combine all the features into a single list
         state = state_1d + state_2d_flattened + distance_set_flattened + [distance_sum]
 
-        # # Print lengths of the features
-        # print(f"Length of state_1d: {len(state_1d)}")
-        # print(f"Length of state_2d_flattened: {len(state_2d_flattened)}")
-        # print(f"Length of distance_set_flattened: {len(distance_set_flattened)}")
-        # print(f"Length of distance_sum: 1")
+        # Print lengths of the features, for fun and profit
+        print(f"Length of state_1d: {len(state_1d)}")
+        print(f"Length of state_2d_flattened: {len(state_2d_flattened)}")
+        print(f"Length of distance_set_flattened: {len(distance_set_flattened)}")
+        print(f"Length of distance_sum: 1")
 
         state = np.array(state, dtype=np.float32)  # Convert the list to a NumPy array
         state = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
@@ -80,26 +99,23 @@ class AI_trainer_controller:
 
     def _store_transition(self, state: Game, action: int, reward: float, next_state: Game, done: bool) -> None:
         transition = (self._game_state_to_tensor(state), action, reward, self._game_state_to_tensor(next_state), done)
-        self.memory.append(transition)
+        if len(self.memory) < self.buffer_size:
+            self.memory.append(transition)
+        else:
+            self.memory.pop(0)  # Remove the oldest transition
+            self.memory.append(transition)  # Add the new transition
 
     def _learn_from_memory(self) -> None:
-        if not self.memory:
+        if len(self.memory) < self.batch_size:
             return
 
-        state, action, reward, next_state, done = random.choice(self.memory)
-        q_values = self.q_network(state)
-        next_q_values = self.q_network(next_state)
+        batch = random.sample(self.memory, self.batch_size)
+        states, actions, rewards, next_states, dones = zip(*batch)
 
-        target_q_values = q_values.clone()
-        if done:
-            target_q_values[0, action - 1] = reward
-        else:
-            target_q_values[0, action - 1] = reward + self.gamma * torch.max(next_q_values)
-
-        loss = self.loss_function(q_values, target_q_values)
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
+        states = torch.cat(states)
+        actions = torch.tensor(actions, dtype=torch.long).unsqueeze(1).to(self.device)
+        rewards = torch.tensor(rewards, dtype=torch.float32).unsqueeze(1).to(self.device)
+        next_states = torch.cat(next_states)
 
     def train(self, episodes: int) -> None:
         for episode in range(episodes):
@@ -121,8 +137,11 @@ class AI_trainer_controller:
                 self._store_transition(state, action, reward, next_state, done)
                 self._learn_from_memory()
 
-        if episode % 2 == 0: # TODO Adjust according to preference
-            print(f"Episode {episode}: Epsilon {self.epsilon}")                        
+            # Update epsilon using the decay schedule
+            self.epsilon = max(self.min_epsilon, self.epsilon * self.decay_factor)
+
+            if episode % 2 == 0:  # TODO Adjust according to preference
+                print(f"Episode {episode}: Epsilon {self.epsilon}")              
 
     def play(self) -> None:
         game = Game(self.game_dimension, True)
@@ -139,10 +158,13 @@ class AI_trainer_controller:
 
 
 if __name__ == "__main__":
-    game_dimension = 3
+    game_dimension = 4
     learning_rate = 0.001
-    gamma = 0.95
+    gamma = 0.99
     epsilon = 1.0
+    buffer_size = 10        # TODO 1000
+    min_epsilon = 0.01
+    decay_factor = 0.995
     episodes = 2
     model_file_path = "Q_model.pth"
 

@@ -7,24 +7,25 @@ At this point, the _console version_ is fairly polished, and offers not only the
 
 The code is not perfect, but I was also itching to get a _GUI mode_ going, and so now if you run from __GUI_controller.py__ a crude PyGame interface allows the game to be played with a pointer device.
 
---
+
 28 Mar 2023
 --
-attempting to add an trainAI.py AI trainer. 
-will then require an AI_controller.py for the model to interface with the game, if further research is desired
+AI_trainer_controller.py
+_(written with the aid of ChatGPT4)_
 
-Core game:
-    Game.py
-    Tile.py
+One of my objectives a couple years ago when I wrote this code, was to toy with MLAs. As a neophyte coder I didn't not find much success at the time.
 
-Required interface for play (at least 1):
-    console_controller.py
-    GUI_controller.py
-    * AI_controller.py [TBA]
+In summary, the code defines a Q-Network and an AI trainer controller for training an AI to play a sliding puzzle game. The AI trainer controller uses a deep Q-learning algorithm to train the Q-Network based on the game states and valid moves. The model is GPU-optimized and uses PyTorch.
 
-Training interface (at least 1):
-    * trainAI_controller.py [deprecated]
-    * GUItrainAI_controller.py
+Here's the high-level training process:
 
-* dependencies:
-    tile_game_env.py
+Initialize the AI_trainer_controller with game dimensions, learning rate, discount factor (gamma), and exploration rate (epsilon).
+Train the model for the specified number of episodes.
+Save the trained model to disk using the save_model() method.
+Load the trained model using the load_model() method before playing the game.
+Play the game using the play() method, which uses the trained model to make moves.
+The code creates a Q-Network for approximating the Q-function, which is used to estimate the expected future rewards for taking actions in a given state. The AI trainer controller trains the Q-Network by interacting with the game environment, storing transitions in memory, and learning from the stored transitions using a mean squared error loss function and an Adam optimizer.
+
+During training, the AI selects actions using an epsilon-greedy exploration strategy, where it either chooses a random action with probability epsilon or selects the action with the highest Q-value according to the Q-Network.
+
+After training, the AI plays the game using the learned Q-Network to choose the best actions based on the current game state. The trained model is saved and loaded from disk, making it suitable for research, re-training, or other purposes.

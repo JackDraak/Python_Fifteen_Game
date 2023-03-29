@@ -150,15 +150,15 @@ def worker_train(trainer: AI_trainer_controller, episodes: int, result_queue: mp
 if __name__ == "__main__":
     if mp.get_start_method(allow_none=True) != 'spawn':
         mp.set_start_method('spawn')
-    game_dimension = 4
+    game_dimension = 4 ## TODO set to 3 for low-power systems
     learning_rate = 0.001
     gamma = 0.99
     epsilon = 1.0
-    buffer_size = 10 # 1000
+    buffer_size = 1000
     min_epsilon = 0.01
     decay_factor = 0.995
     batch_size = 32
-    episodes = 2  # Define the number of episodes here, 1000
+    episodes = 1000  # TODO Define the number of episodes here
     model_file_path = "Q_model.pth"
     num_workers = mp.cpu_count()
 

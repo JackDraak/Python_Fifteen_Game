@@ -1,3 +1,5 @@
+# AI_trainer_controller.py
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -5,6 +7,7 @@ import numpy as np
 import random
 from copy import deepcopy
 from Game import Game
+import multiprocessing as mp
 
 
 class QNetwork(nn.Module):
@@ -19,7 +22,6 @@ class QNetwork(nn.Module):
         x = self.relu(x)
         x = self.fc2(x)
         return x
-
 
 class AI_trainer_controller:
     def __init__(self, game_dimension: int, learning_rate: float, gamma: float, epsilon: float, buffer_size: int, min_epsilon: float, decay_factor: float, batch_size: int):
@@ -140,8 +142,14 @@ class AI_trainer_controller:
 
             print("Solved!")
 
+def worker_train(trainer: AI_trainer_controller, episodes: int, result_queue: mp.Queue):
+    trainer.train(episodes)
+    result_queue.put(trainer.q_network.state_dict())
+
 
 if __name__ == "__main__":
+    if mp.get_start_method(allow_none=True) != 'spawn':
+        mp.set_start_method('spawn')
     game_dimension = 4
     learning_rate = 0.001
     gamma = 0.99
@@ -152,10 +160,24 @@ if __name__ == "__main__":
     batch_size = 32
     episodes = 2  # Define the number of episodes here, 1000
     model_file_path = "Q_model.pth"
+    num_workers = mp.cpu_count()
 
-    ai_trainer = AI_trainer_controller(game_dimension, learning_rate, gamma, epsilon, buffer_size, min_epsilon, decay_factor, batch_size)
-    ai_trainer.train(episodes)
-    ai_trainer.save_model(model_file_path)
+    workers = []
+    result_queue = mp.Queue()
+    for i in range(num_workers):
+        ai_trainer = AI_trainer_controller(game_dimension, learning_rate, gamma, epsilon, buffer_size, min_epsilon, decay_factor, batch_size)
+        worker = mp.Process(target=worker_train, args=(ai_trainer, episodes, result_queue))
+        workers.append(worker)
+
+    for worker in workers:
+        worker.start()
+
+    for worker in workers:
+        worker.join()
+
+    # Retrieve the model states from the result_queue and save the first one as an example
+    state_dicts = [result_queue.get() for _ in range(num_workers)]
+    torch.save(state_dicts[0], model_file_path)
 
     # Load the model before playing
     ai_trainer.load_model(model_file_path)

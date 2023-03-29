@@ -1,3 +1,4 @@
+import numpy as np
 from Tile import Tile
 import random
 import usage
@@ -55,18 +56,16 @@ class Game:
         return False
 
     def get_distance_set(self):
-        label_pairs = list()
+        label_pairs = np.zeros((self.dimension, self.dimension, 2), dtype=int)
         for row in range(self.dimension):
             for column in range(self.dimension):
-                pair = list()
                 label = self.get_label(row, column)
                 this_pair = label, self.get_distance_by_label(label)
-                pair.append(this_pair)
-                label_pairs.append(pair)
+                label_pairs[row, column] = this_pair
         return label_pairs
 
     def get_distance_sum(self):
-        return sum(tile.distance() for tile in self.tiles)
+        return np.sum([tile.distance() for tile in self.tiles])
     
 
     def get_label(self, row: int, column: int):

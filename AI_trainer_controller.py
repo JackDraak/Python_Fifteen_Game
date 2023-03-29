@@ -22,42 +22,26 @@ class QNetwork(nn.Module):
 
 
 class AI_trainer_controller:
-    def __init__(self, game_dimension: int, learning_rate: float, gamma: float, epsilon: float, min_epsilon: float, epsilon_decay: float, batch_size: int, buffer_size: int):
+    def __init__(self, game_dimension: int, learning_rate: float, gamma: float, epsilon: float, buffer_size: int, min_epsilon: float, decay_factor: float, batch_size: int):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print("Device: ", self.device)
+        print("Device: ", self.device) # INFO
         self.game_dimension = game_dimension
         self.learning_rate = learning_rate
         self.gamma = gamma
         self.epsilon = epsilon
-        self.min_epsilon = min_epsilon
-        self.epsilon_decay = epsilon_decay
-        self.batch_size = batch_size
         self.buffer_size = buffer_size
-        self.q_network = QNetwork(37, 64, game_dimension ** 2).to(self.device)
+        self.min_epsilon = min_epsilon
+        self.decay_factor = decay_factor
+        self.batch_size = batch_size
+        self.q_network = QNetwork(37, 64, game_dimension ** 2).to(self.device) # updated for more parameters
         self.optimizer = optim.Adam(self.q_network.parameters(), lr=learning_rate)
         self.loss_function = nn.MSELoss()
         self.memory = []
-        
-# class AI_trainer_controller:
-#     def __init__(self, game_dimension: int, learning_rate: float, gamma: float, epsilon: float, buffer_size: int, min_epsilon: float, decay_factor: float):
-#         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#         print("Device: ", self.device) # INFO
-#         self.game_dimension = game_dimension
-#         self.learning_rate = learning_rate
-#         self.gamma = gamma
-#         self.epsilon = epsilon
-#         self.buffer_size = buffer_size
-#         self.min_epsilon = min_epsilon
-#         self.decay_factor = decay_factor
-#         self.q_network = QNetwork(37, 64, game_dimension ** 2).to(self.device)
-#         self.optimizer = optim.Adam(self.q_network.parameters(), lr=learning_rate)
-#         self.loss_function = nn.MSELoss()
-#         self.memory = []
 
     def _game_state_to_tensor(self, game: Game) -> torch.Tensor:
-        state_1d = game.get_labels_as_list()    # Length 9
-        state_2d = game.get_labels_as_matrix()  # Length 9
-        distance_set = game.get_distance_set()  # Length 18
+        state_1d = game.get_labels_as_list()    # Length 16
+        state_2d = game.get_labels_as_matrix()  # Length 16
+        distance_set = game.get_distance_set()  # Length 32
         distance_sum = game.get_distance_sum()  # Length 1
 
         # Flatten the state_2d
@@ -69,11 +53,11 @@ class AI_trainer_controller:
         # Combine all the features into a single list
         state = state_1d + state_2d_flattened + distance_set_flattened + [distance_sum]
 
-        # Print lengths of the features, for fun and profit
-        print(f"Length of state_1d: {len(state_1d)}")
-        print(f"Length of state_2d_flattened: {len(state_2d_flattened)}")
-        print(f"Length of distance_set_flattened: {len(distance_set_flattened)}")
-        print(f"Length of distance_sum: 1")
+        # # Print lengths of the features, for fun and profit
+        # print(f"Length of state_1d: {len(state_1d)}")
+        # print(f"Length of state_2d_flattened: {len(state_2d_flattened)}")
+        # print(f"Length of distance_set_flattened: {len(distance_set_flattened)}")
+        # print(f"Length of distance_sum: 1")
 
         state = np.array(state, dtype=np.float32)  # Convert the list to a NumPy array
         state = torch.tensor(state, dtype=torch.float32).unsqueeze(0).to(self.device)
@@ -162,17 +146,17 @@ if __name__ == "__main__":
     learning_rate = 0.001
     gamma = 0.99
     epsilon = 1.0
-    buffer_size = 10        # TODO 1000
+    buffer_size = 10 # 1000
     min_epsilon = 0.01
     decay_factor = 0.995
-    episodes = 2
+    batch_size = 32
+    episodes = 2  # Define the number of episodes here, 1000
     model_file_path = "Q_model.pth"
 
-    ai_trainer = AI_trainer_controller(game_dimension, learning_rate, gamma, epsilon)
+    ai_trainer = AI_trainer_controller(game_dimension, learning_rate, gamma, epsilon, buffer_size, min_epsilon, decay_factor, batch_size)
     ai_trainer.train(episodes)
     ai_trainer.save_model(model_file_path)
 
     # Load the model before playing
     ai_trainer.load_model(model_file_path)
     ai_trainer.play()
-

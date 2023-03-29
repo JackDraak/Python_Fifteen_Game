@@ -1,13 +1,24 @@
 # Python: Fifteen Puzzle Game
 _The classic 2-dimensional tile-game "Fifteen", modeled in Python 3_
 
-Thank you for your interest in my project. I've been using this repository as a vehicle to get some experience with the Python syntax. Fundamentally, this means it's in flux. It began as a console game, so that I could hit the ground running (i.e. get some solid results, rapidly, without the need to dive into multiple layers of new framework). If you start to dig through the history, your sanity is in your hands -- I take no responsibility. 
+This GitHub repository contains a Python implementation of the 15-puzzle game with an AI trainer. Here's a brief analysis of the 3 key files:
 
-At this point, the _console version_ is fairly polished, and offers not only the game "15", but also any matrix dimension from 3-31 (and now, as a bonus, it offers a (q)uit option at every prompt, as well as dual-play modes: WASD or numerical.)
+1. AI_trainer_controller.py:
+This file contains the AITrainerController class which uses Python decouple for specific configurations. It handles the integration of the AI in training the model using the game environment provided.
 
-The code is not perfect, but I was also itching to get a _GUI mode_ going, and so now if you run from __GUI_controller.py__ a crude PyGame interface allows the game to be played with a pointer device.
+2. Game.py:
+This file defines the 'Game' class, which handles the game's core logic. It includes functions for initializing, shuffling, moving, and checking the game's state. It also works on a 4x4 grid and provides a simple console interface for interaction.
 
+3. Tile.py:
+Tile.py contains the 'Tile' class, which represents the numbered tiles of the 15-puzzle game. The class includes basic information about each tile (like its value and position) and the functions to check for equality and obtain a string representation.
 
+TLDR:
+The 15-puzzle game project, written in Python, includes an AI trainer and essential classes for the game's core mechanics. Key classes are the AITrainerController, Game, and Tile, which handle training the model, the gameplay, and tile representation, respectively.
+
+FUTURE:
+This was built as an Hello-ML-World project. Begun in 2021, set a side a couple years, and now refurbished and extended with the assistance of ChatGPT4. 
+
+UPDATE:
 28 Mar 2023
 --
 AI_trainer_controller.py

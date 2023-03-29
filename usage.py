@@ -1,6 +1,4 @@
-# Playing around with Python 3, continued...
-# the classic game "Fifteen", for the console:
-# (C) 2021 Jack Draak
+# usage.py
 
 def explain():
     print("""

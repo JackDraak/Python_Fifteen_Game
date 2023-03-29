@@ -32,7 +32,7 @@ The 15-puzzle game project, written in Python, includes an AI trainer and essent
 
 ## Future
 
-This project was initially built as a "Hello-ML-World" project and started in 2021. It was set aside for a couple of years, and now it has been refurbished and extended with the assistance of ChatGPT4.
+This project was initially built as an "Hello-ML-World" project and started in 2020-2021. It was set aside for a couple of years, and now it has been refurbished and extended with the assistance of ChatGPT4.
 
 ## Update
 

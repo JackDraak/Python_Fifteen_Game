@@ -1,5 +1,9 @@
 *.pyc
-deprecated/deprec_ml_controller.py
-deprecated/deprec_path_controller.py
-deprecated/GPU_train_AI_controller.py
-deprecated/tile_game_env.py
+deprecated/*
+__pycache__/*
+.vscode/*
+AI_Trainer_Package/*
+audio/*
+GPT4/*
+images/*
+

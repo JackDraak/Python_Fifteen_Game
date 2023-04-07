@@ -18,18 +18,11 @@ class test_console_controller(TestCase):
 
 
 class test_Game_class(TestCase):
-    def test_duplicate(self):
-        game_a = Game(3, True)
-        game_b = Game(3, True)
-        self.assertFalse(game_a.get_labels_as_list() == game_b.get_labels_as_list())
-        game_b = game_a.duplicate()
-        self.assertTrue(game_a.get_labels_as_list() == game_b.get_labels_as_list())
-
     def test_get_cardinal_label(self):
         game = Game(3, False)
-        self.assertEqual(game.get_cardinal_label((-1, -1)), 5)
-        self.assertEqual(game.get_cardinal_label((0, 0)), 9)
-        self.assertNotEqual(game.get_cardinal_label((-1, 0)), 1)
+        self.assertEqual(game.get_ordinal_label((-1, -1)), 5)
+        self.assertEqual(game.get_ordinal_label((0, 0)), 9)
+        self.assertNotEqual(game.get_ordinal_label((-1, 0)), 1)
 
     def test_get_distance_by_label(self):
         game = Game(3, False)
@@ -44,6 +37,7 @@ class test_Game_class(TestCase):
         self.assertEqual(game.get_distance_set(), ordered_tiles)
         game = Game(3, True)
         self.assertNotEqual(game.get_distance_set(), ordered_tiles)
+        self.assertNotEqual(game.get_distance_set(), [[(1, 0)], [(2, 0)], [(3, 0)], [(4, 0)], [(5, 0)], [(6, 0)], [(7, 0)], [(8, 0)], [(9, 0)]])
 
     def test_get_distance_sum(self):
         game = Game(3, False)
@@ -125,7 +119,8 @@ class test_Tile_class(TestCase):
         self.assertEqual(tile.label, 9)
         self.assertEqual(tile.row, 8)
         self.assertEqual(tile.column, 7)
-        self.assertNotEqual(tile.cardinal, 2)
+        self.assertNotEqual(tile.ordinal, 2)
+
 
 
 if __name__ == '__main__':

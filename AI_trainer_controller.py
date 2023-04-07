@@ -1,5 +1,11 @@
 # AI_trainer_controller.py
 
+# Straight-up: Q-model is almost certainly a terrible choice for this application, and the
+# splatter of data tossed at it is not managed well. Again, this is a starting-point, a
+# proof of concept, and a vehicle for explosure to ML. Try to not see it as anything more 
+# than that, unless you're actually enjoying playing the game -- in that case, live your
+# best life!
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -24,10 +30,10 @@ class QNetwork(nn.Module):
         return x
 
 class AI_trainer_controller:
-    def __init__(self, game_dimension: int, learning_rate: float, gamma: float, epsilon: float, buffer_size: int, min_epsilon: float, decay_factor: float, batch_size: int):
+    def __init__(self, game_breadth: int, learning_rate: float, gamma: float, epsilon: float, buffer_size: int, min_epsilon: float, decay_factor: float, batch_size: int):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print("Device: ", self.device) # INFO
-        self.game_dimension = game_dimension
+        self.game_breadth = game_breadth
         self.learning_rate = learning_rate
         self.gamma = gamma
         self.epsilon = epsilon
@@ -35,7 +41,7 @@ class AI_trainer_controller:
         self.min_epsilon = min_epsilon
         self.decay_factor = decay_factor
         self.batch_size = batch_size
-        self.q_network = QNetwork(37, 64, game_dimension ** 2).to(self.device) # updated for more parameters
+        self.q_network = QNetwork(37, 64, game_breadth ** 2).to(self.device) # updated for more parameters
         self.optimizer = optim.Adam(self.q_network.parameters(), lr=learning_rate)
         self.loss_function = nn.MSELoss()
         self.memory = []
@@ -105,7 +111,7 @@ class AI_trainer_controller:
 
     def train(self, episodes: int) -> None:
         for episode in range(episodes):
-            game = Game(self.game_dimension, True)
+            game = Game(self.game_breadth, True)
             done = False
 
             while not done:
@@ -130,7 +136,7 @@ class AI_trainer_controller:
                 print(f"Episode {episode}: Epsilon {self.epsilon}")              
 
     def play(self) -> None:
-        game = Game(self.game_dimension, True)
+        game = Game(self.game_breadth, True)
         print("Initial state:")
         print(game)
 
@@ -150,7 +156,7 @@ def worker_train(trainer: AI_trainer_controller, episodes: int, result_queue: mp
 if __name__ == "__main__":
     if mp.get_start_method(allow_none=True) != 'spawn':
         mp.set_start_method('spawn')
-    game_dimension = 4 ## TODO set to 3 for low-power systems
+    game_breadth = 4 ## TODO set to 3 for low-power systems
     learning_rate = 0.001
     gamma = 0.99
     epsilon = 1.0
@@ -165,7 +171,7 @@ if __name__ == "__main__":
     workers = []
     result_queue = mp.Queue()
     for i in range(num_workers):
-        ai_trainer = AI_trainer_controller(game_dimension, learning_rate, gamma, epsilon, buffer_size, min_epsilon, decay_factor, batch_size)
+        ai_trainer = AI_trainer_controller(game_breadth, learning_rate, gamma, epsilon, buffer_size, min_epsilon, decay_factor, batch_size)
         worker = mp.Process(target=worker_train, args=(ai_trainer, episodes, result_queue))
         workers.append(worker)
 

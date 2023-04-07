@@ -1,11 +1,10 @@
-# Tile.py 
-
+# Tile.py -- for the tiles that make up the game board.
 import usage
 
 
 class Tile:
     def __init__(self, label: int, row: int, column: int, dimension: int):
-        self.cardinal = label
+        self.ordinal = label
         self.label = label
         self.row = row
         self.column = column
@@ -13,12 +12,12 @@ class Tile:
 
     def __repr__(self):
         lab = self.label
-        car = self.cardinal
+        ord = self.ordinal
         dim = self.dimension
         row = self.row
         col = self.column
         dis = self.distance()
-        return f"<Tile> label:{lab}({car}), position:({dim}){row},{col} distance:{dis}"
+        return f"<Tile> label:{lab}({ord}), position:({dim}){row},{col} distance:{dis}"
 
     def distance(self):
         lab = self.label
@@ -32,8 +31,8 @@ class Tile:
         self.row = row
         self.column = column
 
-    def set(self, cardinal: int, label: int, row: int, column: int):
-        self.cardinal = cardinal
+    def set(self, ordinal: int, label: int, row: int, column: int):
+        self.ordinal = ordinal
         self.label = label
         self.row = row
         self.column = column

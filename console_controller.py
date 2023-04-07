@@ -1,12 +1,8 @@
-# console_controller.py 
-
+# console_controller.py -- a controller for the console version of the game.
 from Game import Game
 from typing import Union, Tuple
 
 def command_check(command: str) -> Union[str, Tuple[int, int]]:
-    """
-    Check the input command and return the appropriate action.
-    """
     if command == "":                   # Default behaviour selected.
         return command
     else:
@@ -27,9 +23,6 @@ def command_check(command: str) -> Union[str, Tuple[int, int]]:
         return command
 
 def input_game_size() -> int:
-    """
-    Prompt the user for the game size and return it.
-    """
     size_default = 4                    # For the classic '15 puzzle', use a grid with a dimension of 4.
     size_max = 31                       # Grids with dimension >31 have >1000 tiles, would require re-formatting.
     size_min = 3                        # Grids with dimension <3 are not functionally playable.
@@ -52,9 +45,6 @@ def input_game_size() -> int:
     return size
 
 def input_shuffle(game: Game) -> None:
-    """
-    Prompt the user for the number of shuffles and shuffle the game accordingly.
-    """
     print("*** Congratulations, you solved the puzzle! ***\n")
     print(game)
     shuffled = False
@@ -73,31 +63,23 @@ def input_shuffle(game: Game) -> None:
             shuffled = game.shuffle(int(shuffles))
 
 def input_turn(game: Game) -> None:
-    """
-    Prompt the user for a move and process the turn.
-    """
     print(game)
     player_move = input("Please, enter the label of the tile you would like to push into the gap.\n" +
+                        "{Alternatively, enter a direction to 'move' the blank tile (using WASD)}\n" +
                         f"Valid tiles to move: {game.get_valid_moves()} ")
     player_move = command_check(player_move)
     process_turn(game, player_move)
 
 def play(game: Game) -> None:
-    """
-    Start the game loop, prompting the user for moves and shuffling when solved.
-    """
     while True:
         input_turn(game)
         if game.is_solved():
             input_shuffle(game)
 
 def process_turn(game: Game, player_move: Union[str, Tuple[int, int]]) -> None:
-    """
-    Process the player's turn based on the given move.
-    """
     print()
     if type(player_move) == tuple:
-        wasd_label = game.get_cardinal_label(player_move)
+        wasd_label = game.get_ordinal_label(player_move)
         if game.get_valid_moves().__contains__(wasd_label):
             game.slide_tile(int(wasd_label))
         else:
@@ -109,12 +91,9 @@ def process_turn(game: Game, player_move: Union[str, Tuple[int, int]]) -> None:
 
 
 def quit_game() -> None:
-    """
-    Print a farewell message and exit the game.
-    """
     print("\nThank you for playing 'fifteen'. Have a nice day! ")
     quit()
 
 
 if __name__ == '__main__':
-    play(Game(input_game_size(), True))
+    play(Game(input_game_size(), True)) # Start a game based on user selected size, shuffled.

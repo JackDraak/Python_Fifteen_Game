@@ -1,4 +1,5 @@
 # console_controller.py -- a controller for the console version of the game.
+# requires Game.py for the game board, which requires Tile class for the tiles that make up the game board.
 from Game import Game
 from typing import Union, Tuple
 

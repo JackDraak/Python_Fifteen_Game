@@ -1,13 +1,12 @@
 # Game.py -- the main class for the game. It contains the game logic and the game state.
-# requires Tile.py for the tiles that make up the game board.
+# requires Tile class for the tiles that make up the game board.
 import numpy as np
-from Tile import Tile
 import random
 import usage
 
 
 class Game:
-    def __init__(self, breadth: int, shuffled: bool):
+    def __init__(self, breadth: int, shuffled: bool) -> None:
         entropy_factor = 100 # set the number of tile-movements for a full shuffle
         self.breadth = breadth # the number of tiles in a row or column
         self.blank_label = breadth * breadth # the final (blank) cell label (id)
@@ -15,8 +14,8 @@ class Game:
         self.shuffle_default = breadth * entropy_factor # the default number of shuffles
         self.tiles = self.generate_tiles(breadth) # the tiles that make up the game board
         if shuffled:
-            # self.shuffle(self.shuffle_default) # TODO - undo this testing change
-            self.shuffle(2) # TODO - undo this testing change
+            self.shuffle(self.shuffle_default) # TODO - undo this testing change
+            # self.shuffle(2) # TODO - undo this testing change
 
     def __repr__(self):
         print_string = ""
@@ -41,10 +40,6 @@ class Game:
                 tiles.append(Tile(label, row, column, breadth))
         return tiles
 
-    def get_ordinal_label(self, direction: tuple):
-        delta = (direction[0] + self.blank_position[0]), (direction[1] + self.blank_position[1])
-        return self.get_label(delta[0], delta[1])   # Return tile.label based on position delta:blank
-
     def get_distance_by_label(self, label: int):
         for tile in self.tiles:
             if tile.label == label:
@@ -63,7 +58,6 @@ class Game:
     def get_distance_sum(self):
         return np.sum([tile.distance() for tile in self.tiles])
     
-
     def get_label(self, row: int, column: int):
         for tile in self.tiles:
             if tile.row == row and tile.column == column:
@@ -84,6 +78,10 @@ class Game:
                 rows.append(self.get_label(row, column))
             tiles.append(rows)
         return tiles
+
+    def get_ordinal_label(self, direction: tuple):
+        delta = (direction[0] + self.blank_position[0]), (direction[1] + self.blank_position[1])
+        return self.get_label(delta[0], delta[1])   # Return tile.label based on position delta:blank
 
     def get_position(self, label: int):
         for tile in self.tiles:
@@ -110,7 +108,7 @@ class Game:
         if valid_moves.__contains__(self.blank_label):  # Trim blank-tile from set.
             valid_moves.remove(self.blank_label)
         return valid_moves
-
+    
     def is_solved(self):
         return list(range(1, self.blank_label + 1)) == self.get_labels_as_list()
 
@@ -159,5 +157,42 @@ class Game:
         return False
 
 
+class Tile:
+    def __init__(self, label: int, row: int, column: int, dimension: int):
+        self.ordinal = label
+        self.label = label
+        self.row = row
+        self.column = column
+        self.dimension = dimension
+
+    def __repr__(self):
+        lab = self.label
+        ord = self.ordinal
+        dim = self.dimension
+        row = self.row
+        col = self.column
+        dis = self.distance()
+        return f"<Tile> label:{lab}({ord}), position:({dim}){row},{col} distance:{dis}"
+
+    def distance(self):
+        lab = self.label
+        dim = self.dimension
+        row = self.row
+        col = self.column
+        row_dimension = row * dim
+        return abs(lab - col - row_dimension - 1)
+
+    def move_to(self, row: int, column: int):
+        self.row = row
+        self.column = column
+
+    def set(self, ordinal: int, label: int, row: int, column: int):
+        self.ordinal = ordinal
+        self.label = label
+        self.row = row
+        self.column = column
+
+
 if __name__ == '__main__':
     usage.explain()
+    

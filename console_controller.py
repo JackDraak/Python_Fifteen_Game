@@ -1,5 +1,3 @@
-# console_controller.py -- a controller for the console version of the game.
-# requires Game.py for the game board, which requires Tile class for the tiles that make up the game board.
 from Game import Game
 from typing import Union, Tuple
 
@@ -11,13 +9,13 @@ def command_check(command: str) -> Union[str, Tuple[int, int]]:
         check_command = command.lower()[0]
         if check_command == "q":        # Quit.
             quit_game()
-        elif check_command == "a":      # Move blank left.  (tile on left takes blank position)
+        elif check_command == "d":      # Swap: move target right, move blank left.  
             direction = (0, -1)
-        elif check_command == "d":      # Move blank right. (tile on right takes blank position)
+        elif check_command == "a":      # Swap: move target left, move blank right.
             direction = (0, 1)
-        elif check_command == "w":      # Move blank up.    (tile above takes blank position)
+        elif check_command == "s":      # Swap: move target down, move blank up.   
             direction = (-1, 0)
-        elif check_command == "s":      # Move blank down.  (tile below takes blank position)
+        elif check_command == "w":      # Swap: move target up, move blank down.  
             direction = (1, 0)
         if direction != (0, 0):
             return direction
@@ -28,11 +26,12 @@ def input_game_size() -> int:
     size_max = 31                       # Grids with dimension >31 have >1000 tiles, would require re-formatting.
     size_min = 3                        # Grids with dimension <3 are not functionally playable.
     size = size_default
-    print("\nGoal: slide the game tiles into the open position, 1-by-1, to re-order them. [Or (q)uit at any prompt]")
-    print("To play the classic tile game, '15', ", end="")
+    print("\nWelcome to the console version of the game 'Fifteen'! Goal: slide the game tiles ")
+    print("into the open position, 1-by-1, to re-order them. [Or (q)uit at any prompt]")
+    print("To play game, ", end="")
     valid_input = False
     while not valid_input:
-        grid_size = input(f"please choose a grid size from {size_min} to {size_max} [default: {size_default}] ")
+        grid_size = input(f"simply choose a grid size from {size_min} to {size_max} [default: {size_default}] to begin: ")
         grid_size = command_check(grid_size)
         if grid_size == "":             # Default value selected.
             valid_input = True
@@ -50,10 +49,10 @@ def input_shuffle(game: Game) -> None:
     print(game)
     shuffled = False
     while not shuffled:
-        shuffles = input(f"How many times would you like to shuffle? [default: {game.shuffle_default}] \n")
+        shuffles = input(f"How many tile-moves would you like to shuffle the board? [default: {game.shuffle_steps}] \n")
         shuffles = command_check(shuffles)
         if shuffles == "":              # Default value selected.
-            game.shuffle(game.shuffle_default)
+            game.shuffle(game.shuffle_steps)
             shuffled = True
             pass
         elif type(shuffles) == tuple:   # Reject WASD input; unrelated to shuffling
@@ -65,8 +64,8 @@ def input_shuffle(game: Game) -> None:
 
 def input_turn(game: Game) -> None:
     print(game)
-    player_move = input("Please, enter the label of the tile you would like to push into the gap.\n" +
-                        "{Alternatively, enter a direction to 'move' the blank tile (using WASD)}\n" +
+    player_move = input("Please, enter the label (#) of the tile you would like to push into the gap.\n" +
+                        "{Alternatively, (using W, A, S, or D) enter a direction to 'slide' the tile}\n" +
                         f"Valid tiles to move: {game.get_valid_moves()} ")
     player_move = command_check(player_move)
     process_turn(game, player_move)
@@ -84,11 +83,11 @@ def process_turn(game: Game, player_move: Union[str, Tuple[int, int]]) -> None:
         if game.get_valid_moves().__contains__(wasd_label):
             game.slide_tile(int(wasd_label))
         else:
-            print("Unable to move that direction...\n")
+            print(" ** Unable to move that direction...\n")
     elif not player_move.isdigit():
-        print("Please, input a valid tile number to move...\n")
+        print(" ** Please, input a valid tile number (or WASD direction) to move...\n")
     elif not game.slide_tile(int(player_move)):
-        print(f"Unable to move tile {player_move}...\n")
+        print(f" ** Unable to move tile {player_move}...\n")
 
 
 def quit_game() -> None:

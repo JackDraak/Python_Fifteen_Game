@@ -1,21 +1,18 @@
-# Game.py -- the main class for the game. It contains the game logic and the game state.
-# requires Tile class for the tiles that make up the game board.
 import numpy as np
 import random
 import usage
 
-
 class Game:
     def __init__(self, breadth: int, shuffled: bool) -> None:
-        entropy_factor = 100 # set the number of tile-movements for a full shuffle
-        self.breadth = breadth # the number of tiles in a row or column
-        self.blank_label = breadth * breadth # the final (blank) cell label (id)
-        self.blank_position = breadth - 1, breadth - 1 # the location of the empty (blank) cell
-        self.shuffle_default = breadth * entropy_factor # the default number of shuffles
-        self.tiles = self.generate_tiles(breadth) # the tiles that make up the game board
+        entropy_factor = 100
+        self.blank_label = breadth * breadth
+        self.blank_position = breadth - 1, breadth - 1
+        self.breadth = breadth 
+        self.tiles = self.generate_tiles(breadth)
+        self.shuffle_steps = breadth * entropy_factor
         if shuffled:
-            self.shuffle(self.shuffle_default) # TODO - undo this testing change
-            # self.shuffle(2) # TODO - undo this testing change
+            self.shuffle(self.shuffle_steps)
+            # self.shuffle(3)                           #  TODO revert to above line after testing
 
     def __repr__(self):
         print_string = ""
@@ -63,14 +60,14 @@ class Game:
             if tile.row == row and tile.column == column:
                 return tile.label
 
-    def get_labels_as_list(self):                   # Return tile-set labels as a 1D array.
+    def get_labels_as_list(self):                       # Return tile-set labels as a 1D array.
         tiles = list()
         for row in range(self.breadth):
             for column in range(self.breadth):
                 tiles.append(self.get_label(row, column))
         return tiles
 
-    def get_labels_as_matrix(self):                 # Return tile-set labels as a 2D array.
+    def get_labels_as_matrix(self):                     # Return tile-set labels as a 2D array.
         tiles = list()
         for row in range(self.breadth):
             rows = list()
@@ -81,7 +78,7 @@ class Game:
 
     def get_ordinal_label(self, direction: tuple):
         delta = (direction[0] + self.blank_position[0]), (direction[1] + self.blank_position[1])
-        return self.get_label(delta[0], delta[1])   # Return tile.label based on position delta:blank
+        return self.get_label(delta[0], delta[1])       # Return tile.label based on position delta:blank
 
     def get_position(self, label: int):
         for tile in self.tiles:
@@ -141,14 +138,16 @@ class Game:
             moves -= 1
         return True
 
-    def slide_tile(self, label: int):
+    def slide_tile(self, label: int):                   #  Swap tagret tile with blank tile.
         if self.get_valid_moves().__contains__(label):
             this_blank_position = self.blank_position
             this_tile_pos = self.get_position(label)
-            if not self.set_tile_position(label, this_blank_position[0], this_blank_position[1]):   # Set pos of tile.
+                                                        #  Set x, y position of target tile.
+            if not self.set_tile_position(label, this_blank_position[0], this_blank_position[1]):   
                 print(f"\n{self}Game.set_tile_position({label},{this_blank_position[0]},{this_blank_position[1]}) FAIL")
                 return False
-            if not self.set_tile_position(self.blank_label, this_tile_pos[0], this_tile_pos[1]):    # Set pos of blank.
+                                                        #  Set x, y position of blank.
+            if not self.set_tile_position(self.blank_label, this_tile_pos[0], this_tile_pos[1]):   
                 print(f"\n{self}Game.set_tile_position({self.blank_label},{this_tile_pos[0]},{this_tile_pos[1]}) FAIL")
                 return False
             else:
@@ -181,6 +180,11 @@ class Tile:
         col = self.column
         row_dimension = row * dim
         return abs(lab - col - row_dimension - 1)
+        
+    def get_tile_by_label(self, label: int):
+        for tile in self.tiles:
+            if tile.label == label:
+                return tile
 
     def move_to(self, row: int, column: int):
         self.row = row
@@ -194,5 +198,10 @@ class Tile:
 
 
 if __name__ == '__main__':
-    usage.explain()
-    
+    from unit_tests import TestGame                     #  If this module is run as a script, 
+    import unittest                                     #  run unit tests,
+    import usage                                        
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestGame)
+    unittest.TextTestRunner().run(suite)
+    print()
+    usage.explain()                                     #  then explain usage.

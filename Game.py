@@ -1,3 +1,4 @@
+# Game.py (with Tile class)
 import numpy as np
 import random
 import usage
@@ -172,6 +173,24 @@ class Tile:
         col = self.column
         dis = self.distance()
         return f"<Tile> label:{lab}({ord}), position:({dim}){row},{col} distance:{dis}"
+
+    # return the set of tile labels as a 2D array of integers
+    def get_labels_as_matrix(self):
+        tiles = list()
+        for row in range(self.breadth):
+            rows = list()
+            for column in range(self.breadth):
+                rows.append(self.get_label(row, column))
+            tiles.append(rows)
+        return tiles
+    
+    # return the set of tile labels as a 1D array of integers, paired with their distance from the goal
+    def get_distance_scores(self):
+        tiles = (list(), list())
+        for row in range(self.breadth):
+            for column in range(self.breadth):
+                tiles.append(self.get_label(row, column), self.get_distance(row, column))
+        return tiles
 
     def distance(self):
         lab = self.label

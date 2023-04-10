@@ -1,3 +1,7 @@
+'''
+    This module contains the GUI_Controller class, which is responsible for handling user input and updating the GUI.
+'''
+# GUI_controller.py 
 from Game import Game
 import pygame.mixer
 import tkinter as tk
@@ -6,7 +10,7 @@ pygame.mixer.init()
 click_sound = pygame.mixer.Sound("audio/click.wav")
 tada_sound = pygame.mixer.Sound("audio/tada.wav")
 
-class GUIController:
+class Controller:
     def __init__(self, game: Game):
         self.game = game
         self.window = tk.Tk()
@@ -110,5 +114,5 @@ class GUIController:
 
 if __name__ == "__main__":
     game = Game(4, True)
-    gui = GUIController(game)
+    gui = Controller(game)
     gui.window.mainloop()

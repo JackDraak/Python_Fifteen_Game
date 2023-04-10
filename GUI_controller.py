@@ -74,10 +74,14 @@ class GUIController:
                         self.handle_win()
 
     def handle_reshuffle(self):
-        self.window.destroy()
-        game = Game(self.game.breadth, True)
-        gui = GUIController(game)
-        gui.window.mainloop()
+        self.game = Game(self.game.breadth, True)
+        self.update_tiles()
+        self.win_label.grid_remove()
+        self.win_button.grid_remove()
+        for button_row in self.buttons:
+            for button in button_row:
+                if button is not None:
+                    button.config(state="normal")
 
     def handle_win(self):
         self.win_label.grid()
@@ -103,7 +107,6 @@ class GUIController:
         click_sound.set_volume(volume)
         tada_sound.set_volume(volume)
         self.volume_var.set("Volume: {}%".format(self.scale_to_percentage(value)))
-
 
 if __name__ == "__main__":
     game = Game(4, True)

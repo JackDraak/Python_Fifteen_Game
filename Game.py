@@ -40,7 +40,7 @@ class Game:
             print(self)
             print(copied_game)
             print()
-        # copied_game.empty_tile_pos = self.empty_tile_pos  # Copy the position of the empty tile
+        # copied_game.empty_tile_pos = self.empty_tile_pos  # Copy the position of the empty tile # probably unneeded
         return copied_game
 
     # TODO Add seeding, as a way to re-generate a game with a known Tiles set state.

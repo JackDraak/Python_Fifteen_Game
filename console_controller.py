@@ -66,7 +66,7 @@ def input_turn(game: Game) -> None:
     print(game)
     player_move = input("Please, enter the label (#) of the tile you would like to push into the gap.\n" +
                         "{Alternatively, (using W, A, S, or D) enter a direction to 'slide' the tile}\n" +
-                        f"Valid tiles to move: {game.get_valid_moves()} ")
+                        f"Tiles free to move this turn: {game.get_valid_moves()} ")
     player_move = command_check(player_move)
     process_turn(game, player_move)
 
@@ -89,9 +89,8 @@ def process_turn(game: Game, player_move: Union[str, Tuple[int, int]]) -> None:
     elif not game.slide_tile(int(player_move)):
         print(f" ** Unable to move tile {player_move}...\n")
 
-
 def quit_game() -> None:
-    print("\nThank you for playing 'fifteen'. Have a nice day! ")
+    print("\nThank you for playing 'fifteen'. Have a nice day!\n")
     quit()
 
 

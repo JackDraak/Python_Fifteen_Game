@@ -3,12 +3,15 @@ import numpy as np
 import random
 import usage
 
+
 class Game:
+     
     def __init__(self, breadth: int, shuffled: bool) -> None:
         entropy_factor = 100
         self.blank_label = breadth * breadth
         self.blank_position = breadth - 1, breadth - 1
         self.breadth = breadth 
+        self.copy_count = 0
         self.tiles = self.generate_tiles(breadth)
         self.shuffle_steps = breadth * entropy_factor
         if shuffled:
@@ -27,6 +30,18 @@ class Game:
                     print_string += "\t"
             print_string += "\n"
         return print_string
+    
+    def copy(self):
+        self.copy_count += 1
+        copied_game = Game(self.breadth, self.shuffle_steps) # Generate a Game object repleat with Tile objects
+        copied_game.tiles = [self.tiles.copy() for tile in self.tiles]  # Deep copy of the tiles
+        if self.copy_count % 100 == 0:
+            print(f"Copy count: {self.copy_count}")
+            print(self)
+            print(copied_game)
+            print()
+        # copied_game.empty_tile_pos = self.empty_tile_pos  # Copy the position of the empty tile
+        return copied_game
 
     @staticmethod
     def generate_tiles(breadth: int):
@@ -106,7 +121,7 @@ class Game:
         if valid_moves.__contains__(self.blank_label):  #  Trim blank-tile from set.
             valid_moves.remove(self.blank_label)
         return valid_moves
-    
+        
     def is_solved(self):
         return list(range(1, self.blank_label + 1)) == self.get_labels_as_list()
 
@@ -173,7 +188,26 @@ class Tile:
         col = self.column
         dis = self.distance()
         return f"<Tile> label:{lab}({ord}), position:({dim}){row},{col} distance:{dis}"
+    
+    def copy(self):
+        return Tile(self.label, self.row, self.column, self.dimension)
 
+    def distance(self):
+        lab = self.label
+        dim = self.dimension
+        row = self.row
+        col = self.column
+        row_dimension = row * dim
+        return abs(lab - col - row_dimension - 1)
+
+    # return the set of tile labels as a 1D array of integers, paired with their distance from the goal
+    def get_distance_scores(self):
+        tiles = (list(), list())
+        for row in range(self.breadth):
+            for column in range(self.breadth):
+                tiles.append(self.get_label(row, column), self.get_distance(row, column))
+        return tiles
+    
     # return the set of tile labels as a 2D array of integers
     def get_labels_as_matrix(self):
         tiles = list()
@@ -183,22 +217,6 @@ class Tile:
                 rows.append(self.get_label(row, column))
             tiles.append(rows)
         return tiles
-    
-    # return the set of tile labels as a 1D array of integers, paired with their distance from the goal
-    def get_distance_scores(self):
-        tiles = (list(), list())
-        for row in range(self.breadth):
-            for column in range(self.breadth):
-                tiles.append(self.get_label(row, column), self.get_distance(row, column))
-        return tiles
-
-    def distance(self):
-        lab = self.label
-        dim = self.dimension
-        row = self.row
-        col = self.column
-        row_dimension = row * dim
-        return abs(lab - col - row_dimension - 1)
         
     def get_tile_by_label(self, label: int):
         for tile in self.tiles:

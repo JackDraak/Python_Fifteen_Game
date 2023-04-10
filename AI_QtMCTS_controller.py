@@ -57,7 +57,7 @@ class Controller:
         Expand a leaf node of the game tree.
         """
         valid_moves = self.game.get_valid_moves()
-        untried_moves = [move for move in valid_moves if move not in node.children]  # change self.children to node.children
+        untried_moves = [move for move in valid_moves if move not in node.children]
 
         if len(untried_moves) == 0:
             return None
@@ -65,24 +65,12 @@ class Controller:
         move = random.choice(untried_moves)
         new_game_state = node.game_state.copy()
 
-        # Convert the label to a direction vector
-        move_direction = None
-        blank_row, blank_col = new_game_state.blank_position
-        for row in new_game_state.tiles:
-            for tile in row:
-                if tile.label == move:
-                    move_direction = [blank_row - tile.row, blank_col - tile.column]
-                    break
-            if move_direction is not None:
-                break
+        # Slide the tile with the chosen move (tile label)
+        new_game_state.slide_tile(move)
 
-        if move_direction is not None:
-            new_game_state.slide_tile(move_direction)
-            child_node = Node(new_game_state, node)  # Update the Node instantiation
-            node.children.append(child_node)  # change self.children to node.children
-            return child_node
-        else:
-            return None
+        child_node = Node(new_game_state, node)
+        node.children.append(child_node)
+        return child_node
 
     def simulate(self, node):
         # MCTS Simulation step

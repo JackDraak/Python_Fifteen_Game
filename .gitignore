@@ -3,7 +3,6 @@ deprecated/*
 __pycache__/*
 .vscode/*
 AI_Trainer_Package/*
-audio/*
 GPT4/*
 images/*
 

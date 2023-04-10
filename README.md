@@ -1,20 +1,19 @@
 # Python: Fifteen Puzzle Game
 
-Welcome to the Python implementation of the classic 2-dimensional tile game "Fifteen," available on GitHub. This project includes an AI trainer and essential classes for the game's core mechanics. The primary purpose of this repo is to get some introduction to machine learning. It will be done poorly, I guarantee, so do not use it as an example. If that's why you're here, I highly recommend that you don't even look at the AI trainer code. All you need to take away from here for some plug-and-play 15 puzzle are:
+Welcome to the Python implementation of the classic 2-dimensional tile game "Fifteen," available on GitHub. This project contains the essential classes for the game's core mechanics. The primary purpose of this repo is to get some introduction to machine learning. It will be done poorly, I guarantee, so do not use it as an example. If that's why you're here, I highly recommend that you don't even look at the AI trainer code. All you need to take away from here for some plug-and-play 15 puzzle are:
 
-- Game.py # Game class, core of the game
-- Tile.py # Tile class required by Game class
+- Game.py # Game class, core of the game, and Tile helper class
 
 One or both of the manual controllers, if you need the patterns:
 
 - console_controller.py # play from console
-- GUI_controller.py # play with a mouse using PyGame
+- GUI_controller.py # play with a mouse using Tkinter
 
 ## Key RL Files
 
 Here's a brief analysis of the key files, if you are looking for a playground to start in:
 
-### AI_trainer_controller.py
+### AI_trainer_controller.py (TBD)
 
 This file contains the AITrainerController class, which uses Python decouple for specific configurations. It handles the integration of the AI in training the model using the game environment provided.
 
@@ -22,9 +21,8 @@ This file contains the AITrainerController class, which uses Python decouple for
 
 This file defines the 'Game' class, which handles the game's core logic. It includes functions for initializing, shuffling, moving, and checking the game's state. It also works on a 4x4 grid and provides a simple console interface for interaction.
 
-### Tile.py
-
-Tile.py contains the 'Tile' class, which represents the numbered tiles of the 15-puzzle game. The class includes basic information about each tile (like its value and position) and the functions to check for equality and obtain a string representation.
+Tile class is also contained within Game.py; Tile represents the numbered tiles of the 15-puzzle game. The class includes basic information about each tile (like its label and position) and the functions to for the game class
+to maintain the game state correctly.
 
 ## TLDR
 
@@ -36,7 +34,7 @@ This project was initially built as an "Hello-ML-World" project and started in 2
 
 ## Update
 
-Date: 28 Mar 2023
+Begin Date: 28 Mar 2023
 
 ### AI Trainer Controller
 

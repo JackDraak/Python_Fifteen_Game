@@ -47,15 +47,15 @@ class GUIController:
         self.volume_label = tk.Label(self.volume_frame, textvariable=self.volume_var)
         self.volume_label.pack(side=tk.LEFT)
         self.volume_slider.pack(side=tk.RIGHT)
-        self.volume_slider.set(15)  # Set the volume slider to 15% by default (relative 50% of max volume)
+        self.volume_slider.set(15)          #  Set the volume slider to 15% by default (relative 50% of max volume)
         
     def create_win_message(self):
         self.win_label = tk.Label(self.board, text="You win!")
         self.win_button = tk.Button(self.board, text="Reshuffle", command=self.handle_reshuffle)
         self.win_label.grid(row=self.game.breadth, column=0, columnspan=self.game.breadth, pady=10)
         self.win_button.grid(row=self.game.breadth+1, column=0, columnspan=self.game.breadth, pady=10)
-        self.win_label.grid_remove()  # Hide the win message initially
-        self.win_button.grid_remove()  # Hide the reshuffle button initially
+        self.win_label.grid_remove()        #  Hide the win message initially
+        self.win_button.grid_remove()       #  Hide the reshuffle button initially
 
     def handle_click(self, event) -> None:
         widget = event.widget
@@ -67,7 +67,7 @@ class GUIController:
             (tile_col == blank_col and abs(tile_row - blank_row) == 1):
                 if self.game.slide_tile(self.game.get_label(tile_row, tile_col)):
                     click_sound.play()
-                    # print(game) # utilize Game.__repr__ to see game state after each move
+                    # print(game)           #  Utilize Game.__repr__ to see game state after each move
                     self.update_tiles()
                     if self.game.is_solved():
                         tada_sound.play()
@@ -92,7 +92,7 @@ class GUIController:
                     button.config(state="disabled")
     
     def scale_to_percentage(self, value):
-        return int((int(value) / 30) * 100) # Scale the volume slider value to a percentage (max 30%)
+        return int((int(value) / 30) * 100) #  Scale the volume slider value to a percentage (max 30%)
 
     def update_tiles(self):
         for row in range(self.game.breadth):

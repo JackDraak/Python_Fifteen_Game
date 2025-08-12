@@ -80,20 +80,6 @@ class Controller:
                 if self.game.is_solved():
                     tada_sound.play()
                     self.handle_win()
-    
-    def handle_click(self, event) -> None:
-        widget = event.widget
-        if isinstance(widget, tk.Button):
-            tile_row = widget.grid_info()["row"]
-            tile_col = widget.grid_info()["column"]
-            blank_row, blank_col = self.game.get_position(self.game.blank_label)
-            if tile_row == blank_row or tile_col == blank_col:
-                if self.game.player_move(self.game.get_label(tile_row, tile_col)):
-                    click_sound.play()
-                    self.update_tiles()
-                    if self.game.is_solved():
-                        tada_sound.play()
-                        self.handle_win()
 
     def handle_reshuffle(self):
         self.game = Game(self.game.breadth, True)

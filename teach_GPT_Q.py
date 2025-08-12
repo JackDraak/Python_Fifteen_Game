@@ -3,64 +3,58 @@ from AI_GPT5_Q import AIController
 from Game import Game
 import time
 import os
+import matplotlib.pyplot as plt
 
+num_episodes = 500
+stats = {
+    "rewards": [],
+    "steps": [],
+    "win_rates": [],
+    "distances": []
+}
 
-def run_learning_session(
-    breadth=3,
-    episodes=100,
-    max_steps=200,
-    epsilon_start=0.2,
-    epsilon_decay=0.995,
-    epsilon_min=0.01,
-    model_path="q_table.json",
-    verbose_interval=10,
-):
-    """
-    Runs multiple episodes of AI-controlled play to train the model.
+ai = AIController(Game(breadth=3, shuffled=True))
 
-    breadth          : puzzle size (3 => 3x3)
-    episodes         : how many episodes to run
-    max_steps        : max moves per episode
-    epsilon_start    : initial exploration rate
-    epsilon_decay    : multiplicative decay after each episode
-    epsilon_min      : lower bound for epsilon
-    model_path       : file to save Q-table after each episode
-    verbose_interval : print status every N episodes
-    """
-    game = Game(breadth, shuffled=True)
-    ai = AIController(game)
-    
-    # Load prior learning if available
-    if os.path.exists(model_path):
-        ai.load_learning(model_path)
-        if verbose_interval:
-            print(f"Loaded existing Q-table from {model_path}.")
+window = 50  # moving average window
+wins_in_window = 0
 
-    ai.epsilon = epsilon_start
+for episode in range(num_episodes):
+    total_reward, steps, solved, distance = ai.play_episode(max_steps=200, verbose=False)
 
-    for ep in range(1, episodes + 1):
-        # Reset game each episode
-        game = Game(breadth, shuffled=True)
-        ai.game = game
+    stats["rewards"].append(total_reward)
+    stats["steps"].append(steps)
+    stats["distances"].append(distance)
 
-        total_reward, steps = ai.play_episode(max_steps=max_steps, verbose=False)
+    if solved:
+        wins_in_window += 1
 
-        # Decay epsilon for less exploration over time
-        ai.epsilon = max(epsilon_min, ai.epsilon * epsilon_decay)
+    # Print stats every N episodes
+    if (episode + 1) % window == 0:
+        win_rate = wins_in_window / window
+        stats["win_rates"].append(win_rate)
+        avg_reward = sum(stats["rewards"][-window:]) / window
+        avg_steps = sum(stats["steps"][-window:]) / window
+        avg_distance = sum(stats["distances"][-window:]) / window
+        print(f"Episode {episode+1}: "
+              f"Win rate={win_rate:.2%}, "
+              f"Avg reward={avg_reward:.2f}, "
+              f"Avg steps={avg_steps:.1f}, "
+              f"Avg distance={avg_distance:.2f}")
+        wins_in_window = 0
 
-        # Save learning progress
-        ai.save_learning(model_path)
+# Plot learning curves
+plt.figure(figsize=(10,6))
+plt.subplot(2, 1, 1)
+plt.plot(stats["rewards"], label="Reward per Episode", alpha=0.7)
+plt.plot(stats["steps"], label="Steps per Episode", alpha=0.7)
+plt.legend()
+plt.title("Learning Performance")
 
-        if verbose_interval and ep % verbose_interval == 0:
-            print(
-                f"Episode {ep}/{episodes}: steps={steps}, reward={total_reward:.2f}, epsilon={ai.epsilon:.3f}"
-            )
-            time.sleep(0.05)
+plt.subplot(2, 1, 2)
+plt.plot(stats["distances"], label="Final Distance", alpha=0.7)
+plt.xlabel("Episode")
+plt.ylabel("Distance")
+plt.legend()
 
-    print("Training complete.")
-    print(f"Q-table saved to {model_path}.")
-
-
-if __name__ == "__main__":
-    run_learning_session()
-
+plt.tight_layout()
+plt.show()

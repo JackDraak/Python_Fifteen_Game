@@ -217,21 +217,31 @@ class AIController:
 
         return success
 
-    def play_episode(self, max_steps: int = 1000, verbose: bool = False) -> bool:
-        """Play until solved or max_steps. Returns True if solved."""
-        steps = 0
-        while steps < max_steps and not self.game.is_solved():
-            moved = self.step()
-            if not moved:
-                # if stuck, break
-                if verbose:
-                    print("AI: stuck, no valid move")
-                break
-            steps += 1
-            if verbose and steps % 50 == 0:
-                print(f"AI: step {steps}, epsilon {self.epsilon:.4f}")
-        return self.game.is_solved()
+    def play_episode(self, max_steps=100, verbose=False):
+      state = self.get_state()
+      total_reward = 0
+      step_count = 0
+  
+      for _ in range(max_steps):
+          action = self.choose_action(state)
+          reward, done = self.take_action(action)
+  
+          total_reward += reward
+          step_count += 1
+  
+          next_state = self.get_state()
+          self.update_q_table(state, action, reward, next_state)
+          state = next_state
+  
+          if verbose:
+              print(f"Step {step_count}, Action: {action}, Reward: {reward}")
+  
+          if done:
+              break
 
+      return total_reward, step_count
+
+  
     # -------------------- Persistence --------------------
     def save_learning(self, path: str):
         # Convert Q to a JSON-serializable structure

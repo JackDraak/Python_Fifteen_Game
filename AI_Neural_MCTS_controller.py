@@ -133,14 +133,13 @@ class NeuralMCTSController:
         self.move_count = 0
         self.model_file = model_file
         
-        # Calculate feature size based on game dimensions
-        # Features: tile positions, distances, move patterns, solved regions
-        feature_size = (
-            game.breadth * game.breadth +  # Tile positions (normalized)
-            game.breadth * game.breadth +  # Distance from goal for each position
-            4 +                            # Move statistics (valid moves count, etc.)
-            8                              # Pattern features (rows/cols solved, etc.)
-        )
+        # Calculate feature size based on actual features generated
+        # We'll determine this dynamically by extracting features from the initial game state
+        temp_features = self.extract_intelligent_features(game)
+        feature_size = temp_features.shape[1]
+        
+        if self.show_thinking:
+            print(f"Detected feature size: {feature_size}")
         
         # Initialize or load neural network
         self.neural_net = PuzzleNet(feature_size)
@@ -244,7 +243,6 @@ class NeuralMCTSController:
         
         # Corner and edge placement accuracy
         corners_correct = 0
-        edges_correct = 0
         
         # Check corners
         corner_positions = [(0, 0), (0, game_state.breadth-1), (game_state.breadth-1, 0), (game_state.breadth-1, game_state.breadth-1)]
@@ -440,6 +438,7 @@ class NeuralMCTSController:
             'b2': self.neural_net.b2,
             'w3': self.neural_net.w3,
             'b3': self.neural_net.b3,
+            'input_size': self.neural_net.input_size,
             'games_played': self.games_played
         }
         with open(self.model_file, 'wb') as f:
@@ -452,16 +451,23 @@ class NeuralMCTSController:
                 with open(self.model_file, 'rb') as f:
                     model_data = pickle.load(f)
                 
-                self.neural_net.w1 = model_data['w1']
-                self.neural_net.b1 = model_data['b1']
-                self.neural_net.w2 = model_data['w2']
-                self.neural_net.b2 = model_data['b2']
-                self.neural_net.w3 = model_data['w3']
-                self.neural_net.b3 = model_data['b3']
-                self.games_played = model_data.get('games_played', 0)
-                
-                if self.show_thinking:
-                    print(f"Loaded model with {self.games_played} games of experience")
+                # Check if the saved model has the same input size
+                if model_data.get('input_size') == self.neural_net.input_size:
+                    self.neural_net.w1 = model_data['w1']
+                    self.neural_net.b1 = model_data['b1']
+                    self.neural_net.w2 = model_data['w2']
+                    self.neural_net.b2 = model_data['b2']
+                    self.neural_net.w3 = model_data['w3']
+                    self.neural_net.b3 = model_data['b3']
+                    self.games_played = model_data.get('games_played', 0)
+                    
+                    if self.show_thinking:
+                        print(f"Loaded model with {self.games_played} games of experience")
+                else:
+                    if self.show_thinking:
+                        print(f"Model input size mismatch. Expected {self.neural_net.input_size}, got {model_data.get('input_size', 'unknown')}")
+                        print("Starting with fresh neural network")
+                        
             except Exception as e:
                 if self.show_thinking:
                     print(f"Could not load model: {e}")

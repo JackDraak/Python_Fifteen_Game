@@ -1,5 +1,5 @@
 #teach_GPT_Q.py
-from ai_controller import AIController
+from AI_GPT5_Q import AIController
 from game import Game
 import time
 import os

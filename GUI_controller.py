@@ -62,6 +62,26 @@ class Controller:
         self.win_button.grid_remove()       #  Hide the reshuffle button initially
 
     def handle_click(self, event) -> None:
+    widget = event.widget
+    if isinstance(widget, tk.Button):
+        # Check if this button has grid info (i.e., it's a game tile)
+        grid_info = widget.grid_info()
+        if not grid_info:  # Quit button and other packed buttons won't have grid_info
+            return
+            
+        tile_row = grid_info["row"]
+        tile_col = grid_info["column"]
+        blank_row, blank_col = self.game.get_position(self.game.blank_label)
+        if (tile_row == blank_row and abs(tile_col - blank_col) == 1) or \
+        (tile_col == blank_col and abs(tile_row - blank_row) == 1):
+            if self.game.player_move(self.game.get_label(tile_row, tile_col)):
+                click_sound.play()
+                self.update_tiles()
+                if self.game.is_solved():
+                    tada_sound.play()
+                    self.handle_win()
+    
+    def handle_click(self, event) -> None:
         widget = event.widget
         if isinstance(widget, tk.Button):
             tile_row = widget.grid_info()["row"]

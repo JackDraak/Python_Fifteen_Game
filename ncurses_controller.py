@@ -65,41 +65,59 @@ class NCursesController:
         self.stdscr.addstr(row, col, tile_text, color_pair)
 
     def draw_game_board(self):
-        """Draw the entire game board."""
-        start_row = 2
-        start_col = 4
+        """Draw the entire game board centered in the terminal."""
+        # Calculate center position
+        terminal_height, terminal_width = self.stdscr.getmaxyx()
+        
         tile_width = 4
+        board_width = self.game.breadth * tile_width + 2  # +2 for borders
+        board_height = self.game.breadth + 2  # +2 for borders
+        
+        # Center the board
+        start_row = max(1, (terminal_height - board_height) // 2)
+        start_col = max(1, (terminal_width - board_width) // 2)
+        
+        # Store for use in status display
+        self.board_start_row = start_row
+        self.board_end_row = start_row + board_height
         
         # Draw top border
         border_color = curses.color_pair(self.COLOR_BORDER)
-        border_width = self.game.breadth * tile_width + 1
-        self.stdscr.addstr(start_row - 1, start_col - 1, "+" + "-" * border_width + "+", border_color)
+        border_line = "+" + "-" * (board_width - 2) + "+"
+        self.stdscr.addstr(start_row, start_col, border_line, border_color)
         
         # Draw game tiles and side borders
         for tile_row in range(self.game.breadth):
-            screen_row = start_row + tile_row
-            self.stdscr.addstr(screen_row, start_col - 1, "|", border_color)
+            screen_row = start_row + 1 + tile_row
+            self.stdscr.addstr(screen_row, start_col, "|", border_color)
             
             for tile_col in range(self.game.breadth):
-                screen_col = start_col + tile_col * tile_width
+                screen_col = start_col + 1 + tile_col * tile_width
                 self.draw_tile(screen_row, screen_col, tile_row, tile_col)
             
-            self.stdscr.addstr(screen_row, start_col + border_width - 1, "|", border_color)
+            self.stdscr.addstr(screen_row, start_col + board_width - 1, "|", border_color)
         
-        # Draw bottom border  
-        bottom_row = start_row + self.game.breadth
-        self.stdscr.addstr(bottom_row, start_col - 1, "+" + "-" * border_width + "+", border_color)
+        # Draw bottom border
+        bottom_row = start_row + board_height - 1
+        self.stdscr.addstr(bottom_row, start_col, border_line, border_color)
 
     def draw_status(self):
         """Draw status information and instructions."""
-        status_row = self.game.breadth + 5
+        terminal_height, terminal_width = self.stdscr.getmaxyx()
         status_color = curses.color_pair(self.COLOR_STATUS)
         
-        # Game status
-        self.stdscr.addstr(0, 0, f"Fifteen Puzzle - Size: {self.game.breadth}x{self.game.breadth}", status_color)
-        self.stdscr.addstr(1, 0, f"Moves: {self.move_count}", status_color)
+        # Game status at top
+        title = f"Fifteen Puzzle - Size: {self.game.breadth}x{self.game.breadth}"
+        moves_text = f"Moves: {self.move_count}"
         
-        # Instructions
+        # Center the title
+        title_col = max(0, (terminal_width - len(title)) // 2)
+        self.stdscr.addstr(0, title_col, title, status_color)
+        self.stdscr.addstr(1, title_col, moves_text, status_color)
+        
+        # Instructions below the board
+        status_start_row = getattr(self, 'board_end_row', terminal_height // 2 + 5) + 1
+        
         instructions = [
             "Controls:",
             "  Arrow Keys or WASD - Move cursor",
@@ -109,72 +127,67 @@ class NCursesController:
             "  Ctrl+C - Exit completely"
         ]
         
+        # Center the instructions
+        max_instruction_len = max(len(instruction) for instruction in instructions)
+        instruction_col = max(0, (terminal_width - max_instruction_len) // 2)
+        
         for i, instruction in enumerate(instructions):
-            self.stdscr.addstr(status_row + i, 0, instruction, status_color)
+            if status_start_row + i < terminal_height - 1:
+                self.stdscr.addstr(status_start_row + i, instruction_col, instruction, status_color)
         
         # Current selection info
-        if self.cursor_row < self.game.breadth and self.cursor_col < self.game.breadth:
+        if (self.cursor_row < self.game.breadth and self.cursor_col < self.game.breadth and 
+            status_start_row + len(instructions) + 2 < terminal_height - 1):
+            
             selected_label = self.game.get_label(self.cursor_row, self.cursor_col)
             if selected_label != self.game.blank_label:
-                valid_moves = self.game.get_valid_moves()
-                can_move = self.can_move_tile(selected_label)
                 move_type = self.get_move_type(selected_label)
                 
-                self.stdscr.addstr(status_row + len(instructions) + 1, 0, 
-                                 f"Selected: Tile {selected_label}", status_color)
-                self.stdscr.addstr(status_row + len(instructions) + 2, 0, 
-                                 f"Move type: {move_type}", status_color)
+                selection_text = f"Selected: Tile {selected_label}"
+                move_type_text = f"Move type: {move_type}"
+                
+                # Center the selection info
+                selection_col = max(0, (terminal_width - len(selection_text)) // 2)
+                move_type_col = max(0, (terminal_width - len(move_type_text)) // 2)
+                
+                self.stdscr.addstr(status_start_row + len(instructions) + 1, selection_col, 
+                                 selection_text, status_color)
+                self.stdscr.addstr(status_start_row + len(instructions) + 2, move_type_col, 
+                                 move_type_text, status_color)
 
     def draw_message(self, message: str, is_error: bool = False):
         """Draw a temporary message at the bottom of the screen."""
-        message_row = curses.LINES - 2
+        terminal_height, terminal_width = self.stdscr.getmaxyx()
+        message_row = terminal_height - 2
         color = curses.color_pair(self.COLOR_ERROR if is_error else self.COLOR_STATUS)
         
         # Clear the message line
-        self.stdscr.addstr(message_row, 0, " " * (curses.COLS - 1))
-        self.stdscr.addstr(message_row, 0, message, color)
+        self.stdscr.addstr(message_row, 0, " " * min(terminal_width - 1, len(message) + 10))
+        
+        # Center the message
+        message_col = max(0, (terminal_width - len(message)) // 2)
+        if message_col + len(message) < terminal_width:
+            self.stdscr.addstr(message_row, message_col, message, color)
 
     def can_move_tile(self, label: int) -> bool:
-        """Check if a tile can be moved (directly adjacent or in same row/column as blank)."""
-        if label == self.game.blank_label:
-            return False
-            
-        tile_pos = self.game.get_position(label)
-        blank_row, blank_col = self.game.blank_position
-        tile_row, tile_col = tile_pos
-        
-        # Direct adjacency (standard move)
-        if label in self.game.get_valid_moves():
-            return True
-            
-        # Same row or column (multi-tile shift)
-        if tile_row == blank_row or tile_col == blank_col:
-            return True
-            
-        return False
+        """Check if a tile can be moved using the game's validation."""
+        return label in self.game.get_valid_moves()
 
     def get_move_type(self, label: int) -> str:
         """Determine the type of move for a given tile."""
         if label == self.game.blank_label:
             return "Cannot move blank space"
             
-        tile_pos = self.game.get_position(label)
-        blank_row, blank_col = self.game.blank_position
-        tile_row, tile_col = tile_pos
-        
-        # Direct adjacency
-        if label in self.game.get_valid_moves():
+        if not self.can_move_tile(label):
+            return "Invalid move"
+            
+        sequence = self.game.get_move_sequence(label)
+        if len(sequence) == 1:
             return "Direct swap"
-            
-        # Multi-tile move
-        if tile_row == blank_row:
-            tiles_between = abs(tile_col - blank_col) - 1
-            return f"Row shift ({tiles_between + 1} tiles)"
-        elif tile_col == blank_col:
-            tiles_between = abs(tile_row - blank_row) - 1
-            return f"Column shift ({tiles_between + 1} tiles)"
-            
-        return "Invalid move"
+        elif len(sequence) > 1:
+            return f"Multi-tile shift ({len(sequence)} tiles)"
+        else:
+            return "Invalid move"
 
     def move_selected_tile(self) -> bool:
         """Move the currently selected tile if possible."""
@@ -188,58 +201,22 @@ class NCursesController:
             return False
             
         if not self.can_move_tile(selected_label):
-            self.draw_message("Invalid move - tile not in same row or column as blank space!", True)
+            self.draw_message("Invalid move!", True)
             return False
             
-        # Perform the move
-        success = self.perform_tile_move(selected_label)
+        # Use the enhanced player_move method
+        success = self.game.player_move(selected_label)
         if success:
             self.move_count += 1
-            self.draw_message(f"Moved tile {selected_label}")
+            sequence = self.game.get_move_sequence(selected_label)
+            if len(sequence) == 1:
+                self.draw_message(f"Moved tile {selected_label}")
+            else:
+                self.draw_message(f"Shifted {len(sequence)} tiles")
         else:
             self.draw_message("Move failed!", True)
             
         return success
-
-    def perform_tile_move(self, label: int) -> bool:
-        """Perform a single tile move or multi-tile shift."""
-        # Direct move (adjacent to blank)
-        if label in self.game.get_valid_moves():
-            return self.game.slide_tile(label)
-            
-        # Multi-tile move
-        tile_pos = self.game.get_position(label)
-        blank_row, blank_col = self.game.blank_position
-        tile_row, tile_col = tile_pos
-        
-        if tile_row == blank_row:  # Same row
-            # Determine direction and tiles to move
-            if tile_col < blank_col:  # Move tiles right
-                for col in range(tile_col, blank_col):
-                    next_label = self.game.get_label(tile_row, col + 1)
-                    if not self.game.slide_tile(next_label):
-                        return False
-            else:  # Move tiles left
-                for col in range(tile_col, blank_col, -1):
-                    next_label = self.game.get_label(tile_row, col - 1)
-                    if not self.game.slide_tile(next_label):
-                        return False
-            return True
-            
-        elif tile_col == blank_col:  # Same column
-            if tile_row < blank_row:  # Move tiles down
-                for row in range(tile_row, blank_row):
-                    next_label = self.game.get_label(row + 1, tile_col)
-                    if not self.game.slide_tile(next_label):
-                        return False
-            else:  # Move tiles up
-                for row in range(tile_row, blank_row, -1):
-                    next_label = self.game.get_label(row - 1, tile_col)
-                    if not self.game.slide_tile(next_label):
-                        return False
-            return True
-            
-        return False
 
     def handle_input(self, key: int) -> bool:
         """Handle keyboard input. Returns False to quit."""
@@ -283,6 +260,14 @@ class NCursesController:
             curses.cbreak()
             self.stdscr.keypad(True)
             curses.curs_set(0)  # Hide cursor
+            
+            # Check minimum terminal size
+            terminal_height, terminal_width = self.stdscr.getmaxyx()
+            min_width = self.game.breadth * 4 + 10  # Game width + padding
+            min_height = self.game.breadth + 15     # Game height + status area
+            
+            if terminal_width < min_width or terminal_height < min_height:
+                raise Exception(f"Terminal too small. Need at least {min_width}x{min_height}, got {terminal_width}x{terminal_height}")
             
             self.setup_colors()
             
@@ -353,3 +338,4 @@ if __name__ == '__main__':
             print("Falling back to console mode...")
             controller = Controller(game)
             controller.play()
+            

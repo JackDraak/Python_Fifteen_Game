@@ -1,4 +1,5 @@
 # Game.py (with Tile class)
+# Enhanced Game.py with multi-tile movement support with Claude Sonnet 4
 import numpy as np
 import random
 import usage
@@ -110,18 +111,110 @@ class Game:
         return tiles
 
     def get_valid_moves(self):
+        """Return all tiles that can be moved: adjacent tiles + tiles in same row/column as blank."""
         valid_moves = list()
         blank_row, blank_column = self.blank_position
+        
+        # Get all tiles (excluding the blank itself)
         for tile in self.tiles:
-            if tile.row == blank_row:                   #  Select horizontal neighbors.
-                if tile.column + 1 == blank_column or tile.column - 1 == blank_column:
-                    valid_moves.append(tile.label)
-            if tile.column == blank_column:             #  Select vertical neighbors.
-                if tile.row + 1 == blank_row or tile.row - 1 == blank_row:
-                    valid_moves.append(tile.label)
-        if valid_moves.__contains__(self.blank_label):  #  Trim blank-tile from set.
-            valid_moves.remove(self.blank_label)
+            if tile.label == self.blank_label:
+                continue
+                
+            tile_row, tile_col = tile.row, tile.column
+            
+            # Check if tile can move (adjacent OR same row/column as blank)
+            is_adjacent = False
+            is_same_line = False
+            
+            # Adjacent check (original logic)
+            if tile_row == blank_row:
+                if tile_col + 1 == blank_column or tile_col - 1 == blank_column:
+                    is_adjacent = True
+            if tile_col == blank_column:
+                if tile_row + 1 == blank_row or tile_row - 1 == blank_row:
+                    is_adjacent = True
+            
+            # Same row/column check (new logic)
+            if tile_row == blank_row or tile_col == blank_column:
+                is_same_line = True
+            
+            # Add to valid moves if either condition is met
+            if is_adjacent or is_same_line:
+                valid_moves.append(tile.label)
+        
         return valid_moves
+
+    def get_move_sequence(self, label: int):
+        """
+        Get the sequence of tiles that need to be moved to achieve the desired move.
+        Returns a list of tile labels to pass to slide_tile() in order.
+        """
+        if label == self.blank_label:
+            return []
+        
+        tile_pos = self.get_position(label)
+        if not tile_pos:
+            return []
+            
+        tile_row, tile_col = tile_pos
+        blank_row, blank_col = self.blank_position
+        
+        # Check if move is valid
+        if label not in self.get_valid_moves():
+            return []
+        
+        # Direct adjacent move - single tile
+        if (tile_row == blank_row and abs(tile_col - blank_col) == 1) or \
+           (tile_col == blank_col and abs(tile_row - blank_row) == 1):
+            return [label]
+        
+        # Multi-tile move - same row
+        if tile_row == blank_row:
+            sequence = []
+            if tile_col < blank_col:  # Target is left of blank, move tiles right
+                for col in range(blank_col - 1, tile_col - 1, -1):
+                    move_label = self.get_label(tile_row, col)
+                    if move_label and move_label != self.blank_label:
+                        sequence.append(move_label)
+            else:  # Target is right of blank, move tiles left
+                for col in range(blank_col + 1, tile_col + 1):
+                    move_label = self.get_label(tile_row, col)
+                    if move_label and move_label != self.blank_label:
+                        sequence.append(move_label)
+            return sequence
+        
+        # Multi-tile move - same column
+        if tile_col == blank_col:
+            sequence = []
+            if tile_row < blank_row:  # Target is above blank, move tiles down
+                for row in range(blank_row - 1, tile_row - 1, -1):
+                    move_label = self.get_label(row, tile_col)
+                    if move_label and move_label != self.blank_label:
+                        sequence.append(move_label)
+            else:  # Target is below blank, move tiles up
+                for row in range(blank_row + 1, tile_row + 1):
+                    move_label = self.get_label(row, tile_col)
+                    if move_label and move_label != self.blank_label:
+                        sequence.append(move_label)
+            return sequence
+        
+        return []
+
+    def player_move(self, label: int):
+        """
+        High-level player move function that can handle both single and multi-tile moves.
+        Returns True if successful, False otherwise.
+        """
+        sequence = self.get_move_sequence(label)
+        if not sequence:
+            return False
+        
+        # Execute the sequence using existing slide_tile method
+        for tile_label in sequence:
+            if not self.slide_tile(tile_label):
+                return False  # If any move fails, return failure
+        
+        return True
         
     def is_solved(self):
         return list(range(1, self.blank_label + 1)) == self.get_labels_as_list()
@@ -146,7 +239,8 @@ class Game:
     def shuffle(self, moves: int):
         last_move = int()
         while moves > 0:
-            options = self.get_valid_moves()
+            # Use original adjacent-only logic for shuffling to ensure solvability
+            options = self._get_adjacent_moves()
             if options.__contains__(last_move):
                 options.remove(last_move)
             random_move = options[random.randint(0, len(options) - 1)]
@@ -155,8 +249,23 @@ class Game:
             moves -= 1
         return True
 
+    def _get_adjacent_moves(self):
+        """Helper method that returns only adjacent moves (original get_valid_moves logic)."""
+        valid_moves = list()
+        blank_row, blank_column = self.blank_position
+        for tile in self.tiles:
+            if tile.row == blank_row:                   #  Select horizontal neighbors.
+                if tile.column + 1 == blank_column or tile.column - 1 == blank_column:
+                    valid_moves.append(tile.label)
+            if tile.column == blank_column:             #  Select vertical neighbors.
+                if tile.row + 1 == blank_row or tile.row - 1 == blank_row:
+                    valid_moves.append(tile.label)
+        if valid_moves.__contains__(self.blank_label):  #  Trim blank-tile from set.
+            valid_moves.remove(self.blank_label)
+        return valid_moves
+
     def slide_tile(self, label: int):                   #  Swap tagret tile with blank tile.
-        if self.get_valid_moves().__contains__(label):
+        if self._get_adjacent_moves().__contains__(label):  # Use adjacent-only check for slide_tile
             this_blank_position = self.blank_position
             this_tile_pos = self.get_position(label)
                                                         #  Set x, y position of target tile.

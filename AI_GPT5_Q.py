@@ -217,36 +217,30 @@ class AIController:
 
         return success
 
-    def play_episode(self, max_steps=100, verbose=False):
-      """
-      Run up to max_steps moves in the game, learning as we go.
-      Returns (total_reward, steps_taken).
-      """
+    def play_episode(self, max_steps=200, verbose=False):
+      state = self._state_from_game()
       total_reward = 0
-      steps_taken = 0
+      steps = 0
   
       for _ in range(max_steps):
-          # Record current distance for reward shaping
-          before_distance = self._distance_sum_from_labels(self.game.get_labels_as_list())
-  
-          moved = self.step()  # chooses move, executes, updates Q
-  
-          if not moved:
-              break  # no valid moves
-  
-          after_distance = self._distance_sum_from_labels(self.game.get_labels_as_list())
-          reward = before_distance - after_distance
+          action = self.choose_action(state)
+          self.game.move(action)
+          next_state = self._state_from_game()
+          reward = self._calculate_reward()
           total_reward += reward
-          steps_taken += 1
   
-          if verbose:
-              print(f"Step {steps_taken}, Reward: {reward:.2f}, Epsilon: {self.epsilon:.3f}")
+          self.learn(state, action, reward, next_state)
+          state = next_state
+          steps += 1
   
-          # Optional: check if solved
-          if after_distance == 0:
-              break
+          if self.game.is_solved():
+              if verbose:
+                  print(f"Solved in {steps} steps with total reward {total_reward:.2f}")
+              return total_reward, steps, True, 0  # solved → distance 0
   
-      return total_reward, steps_taken
+      # If not solved, measure final distance from solved
+      distance = self._calculate_distance()
+      return total_reward, steps, False, distance
 
   
     # -------------------- Persistence --------------------

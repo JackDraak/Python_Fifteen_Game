@@ -218,28 +218,35 @@ class AIController:
         return success
 
     def play_episode(self, max_steps=100, verbose=False):
-      state = self.get_state()
+      """
+      Run up to max_steps moves in the game, learning as we go.
+      Returns (total_reward, steps_taken).
+      """
       total_reward = 0
-      step_count = 0
+      steps_taken = 0
   
       for _ in range(max_steps):
-          action = self.choose_action(state)
-          reward, done = self.take_action(action)
+          # Record current distance for reward shaping
+          before_distance = self._distance_sum_from_labels(self.game.get_labels_as_list())
   
+          moved = self.step()  # chooses move, executes, updates Q
+  
+          if not moved:
+              break  # no valid moves
+  
+          after_distance = self._distance_sum_from_labels(self.game.get_labels_as_list())
+          reward = before_distance - after_distance
           total_reward += reward
-          step_count += 1
-  
-          next_state = self.get_state()
-          self.update_q_table(state, action, reward, next_state)
-          state = next_state
+          steps_taken += 1
   
           if verbose:
-              print(f"Step {step_count}, Action: {action}, Reward: {reward}")
+              print(f"Step {steps_taken}, Reward: {reward:.2f}, Epsilon: {self.epsilon:.3f}")
   
-          if done:
+          # Optional: check if solved
+          if after_distance == 0:
               break
-
-      return total_reward, step_count
+  
+      return total_reward, steps_taken
 
   
     # -------------------- Persistence --------------------

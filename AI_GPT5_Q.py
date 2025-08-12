@@ -78,6 +78,16 @@ class AIController:
             total += abs((lab - 1) - i)
         return total
 
+    def _calculate_distance(self):
+      distance = 0
+      for idx, tile in enumerate(self.game.tiles):
+          if tile != self.blank_label:
+              correct_row, correct_col = divmod(tile - 1, self.breadth)
+              current_row, current_col = divmod(idx, self.breadth)
+              distance += abs(correct_row - current_row) + abs(correct_col - current_col)
+      return distance
+      
+
     # -------------------- Simulation helpers --------------------
     def _simulate_sequence(self, labels: List[int], sequence: List[int]) -> List[int]:
         """Apply sequence of moves (list of tile labels) to a flat labels list.

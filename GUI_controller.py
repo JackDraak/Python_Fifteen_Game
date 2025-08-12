@@ -62,12 +62,12 @@ class Controller:
         self.win_button.grid_remove()       #  Hide the reshuffle button initially
 
     def handle_click(self, event) -> None:
-    widget = event.widget
-    if isinstance(widget, tk.Button):
-        # Check if this button has grid info (i.e., it's a game tile)
-        grid_info = widget.grid_info()
-        if not grid_info:  # Quit button and other packed buttons won't have grid_info
-            return
+        widget = event.widget
+        if isinstance(widget, tk.Button):
+            # Check if this button has grid info (i.e., it's a game tile)
+            grid_info = widget.grid_info()
+            if not grid_info:  # Quit button and other packed buttons won't have grid_info
+                return
             
         tile_row = grid_info["row"]
         tile_col = grid_info["column"]

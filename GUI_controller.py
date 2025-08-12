@@ -67,11 +67,16 @@ class Controller:
             tile_row = widget.grid_info()["row"]
             tile_col = widget.grid_info()["column"]
             blank_row, blank_col = self.game.get_position(self.game.blank_label)
+            if tile_row == blank_row or tile_col == blank_col:
+                if self.game.player_move(self.game.get_label(tile_row, tile_col)):
+                    click_sound.play()
+            '''
             if (tile_row == blank_row and abs(tile_col - blank_col) == 1) or \
             (tile_col == blank_col and abs(tile_row - blank_row) == 1):
                 if self.game.slide_tile(self.game.get_label(tile_row, tile_col)):
                     click_sound.play()
                     # print(game)           #  Utilize Game.__repr__ to see game state after each move
+            '''
                     self.update_tiles()
                     if self.game.is_solved():
                         tada_sound.play()

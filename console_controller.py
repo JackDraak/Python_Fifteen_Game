@@ -96,7 +96,6 @@ class Controller:
                 print(" ** Unable to move that direction...\n")
         elif not player_move.isdigit():
             print(" ** Please, input a valid tile number (or WASD direction) to move...\n")
-        # elif not game.slide_tile(int(player_move)):
         elif not game.player_move(int(player_move)):
             print(f" ** Unable to move tile {player_move}...\n")
 

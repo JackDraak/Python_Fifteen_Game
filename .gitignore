@@ -5,4 +5,6 @@ __pycache__/*
 AI_Trainer_Package/*
 GPT4/*
 images/*
-
+tensorflow_env/*
+puzzle_model*
+q_table.json

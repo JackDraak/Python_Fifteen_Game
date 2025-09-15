@@ -239,7 +239,7 @@ This is an educational project. Contributions should prioritize:
 
 ## 📄 License
 
-[Insert appropriate educational/open source license]
+MIT License - see LICENSE file for details
 
 ## 🙏 Acknowledgments
 

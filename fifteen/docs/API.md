@@ -47,6 +47,13 @@ Returns list of tiles that can legally move.
 
 **Returns:** List of valid tile labels
 
+**Note:** Always returns exactly 6 valid moves. Mechanical analysis reveals:
+- **Corner blank**: 1 regressive, 1 progressive, 0 exploratory, 4 chain moves
+- **Edge blank**: 1 regressive, 1 progressive, 1 exploratory, 3 chain moves
+- **Surrounded blank**: 1 regressive, 1 progressive, 2 exploratory, 2 chain moves
+
+Chain moves are sequences of neighbor-swaps and can be ignored for efficient solving.
+
 ##### `is_solved() -> bool`
 Checks if puzzle is in solved state.
 

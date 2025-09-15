@@ -322,6 +322,31 @@ class Game:
             dis = self.get_distance_by_label(tile.label)
             print(f"<Tile> label:{lab}({ord}), position:({dim}){row},{col} distance:{dis}")
 
+    def set_state_from_list(self, state_list: list):
+        """
+        Set game state from a flat list representation.
+        Used for testing specific configurations.
+
+        Args:
+            state_list: List of tile labels in row-major order
+        """
+        if len(state_list) != self.breadth * self.breadth:
+            raise ValueError(f"State list must have {self.breadth * self.breadth} elements")
+
+        # Clear current tiles
+        self.tiles.clear()
+
+        # Create tiles from list
+        for i, label in enumerate(state_list):
+            row = i // self.breadth
+            col = i % self.breadth
+
+            if label == self.blank_label:
+                self.blank_position = (row, col)
+            else:
+                tile = Tile(label, row, col, self.breadth)
+                self.tiles.append(tile)
+
 
 class Tile:
     def __init__(self, label: int, row: int, column: int, dimension: int):

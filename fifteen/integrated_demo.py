@@ -296,6 +296,23 @@ class IntegratedDemo:
         print(f"  Total RL time: {self.session_stats['rl_total_time']:.2f}s")
         print(f"  Total Optimal time: {self.session_stats['optimal_total_time']:.2f}s")
 
+    def _convert_to_json_serializable(self, obj):
+        """Convert numpy types and other non-serializable objects to JSON-compatible types."""
+        import numpy as np
+
+        if isinstance(obj, dict):
+            return {key: self._convert_to_json_serializable(value) for key, value in obj.items()}
+        elif isinstance(obj, list):
+            return [self._convert_to_json_serializable(item) for item in obj]
+        elif isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return obj
+
     def save_session_data(self, filename: str = None):
         """Save all session data for analysis."""
         if filename is None:
@@ -308,8 +325,11 @@ class IntegratedDemo:
             'summary': 'Integrated demo comparing RL vs Optimal AI approaches'
         }
 
+        # Convert numpy types to JSON-serializable types
+        serializable_data = self._convert_to_json_serializable(data)
+
         with open(filename, 'w') as f:
-            json.dump(data, f, indent=2)
+            json.dump(serializable_data, f, indent=2)
 
         print(f"\nSession data saved to: {filename}")
         return filename

@@ -200,6 +200,9 @@ results = demo.run_performance_suite(
 ```
 /fifteen/
 ├── Game.py                 # Core puzzle implementation
+├── console_controller.py   # Text-based interactive game
+├── ncurses_controller.py   # Colorful terminal game interface
+├── GUI_controller.py       # Graphical tkinter game interface
 ├── AI_controller.py        # Reinforcement Learning AI
 ├── OptimalAI.py           # IDA* Optimal Search AI
 ├── integrated_demo.py     # Educational comparison demo

@@ -1,87 +1,31 @@
-# Python: Fifteen Puzzle Game
+# Fifteen Puzzle AI Educational Project
 
-## Installation
+An educational implementation of the classic fifteen puzzle with reinforcement learning and optimal search AI approaches.
 
-```
+## Quick Start
+
+```bash
 git clone https://github.com/JackDraak/Python_Fifteen_Game.git
-cd Python_Fifteen_Game
+cd Python_Fifteen_Game/fifteen
+pip install numpy  # Required
+python integrated_demo.py  # Start educational demo
 ```
 
-## Install dependencies and package
-```
-pip install -r requirements.txt
-pip install -e .
-```
+## Project Overview
 
-## Running the Game
+This project demonstrates two distinct AI approaches for solving the fifteen puzzle:
+- **Reinforcement Learning AI**: Learns through trial and error using Deep Q-Networks
+- **Optimal Search AI**: Uses IDA* algorithm with mathematical guarantees
 
-### GUI Version
-```
-python3 GUI_controller.py
-```
+## Documentation
 
-### Console Version
-```
-python3 console_controller.py
-```
+📚 **Complete documentation and usage guides are in `/fifteen/README.md`**
 
-## Dependencies
-- Python 3.7+
-- pygame
-- tkinter
-- numpy
+The main implementation and all educational materials are located in the `/fifteen` directory.
 
-## More Spiel
-Welcome to my Python implementation of the classic 2-dimensional tile game "Fifteen," made available on GitHub. This project contains the essential classes for the game's core mechanics. The primary purpose of this repo is to get some introduction to machine learning. It will be done poorly, I guarantee, so do not use it as an example. If that's why you're here, I highly recommend that you don't even look at the AI trainer code. All you need to take away from here for some plug-and-play 15 puzzle are:
+## Project Structure
 
-- Game.py # Game class, core of the game, and Tile helper class
-
-One or any of the controllers, to see the patterns in-use:
-
-- console_controller.py    # play from console
-- ncurses_controller.py    # play from console, but with colour!
-- GUI_controller.py        # play with a mouse using Tkinter
-
-## Key RL Files
-
-Here's a brief analysis of the key files, if you are looking for a playground to start in:
-
-### AI_trainer_controller.py (TBD)
-
-This file contains the AITrainerController class, which uses Python decouple for specific configurations. It handles the integration of the AI in training the model using the game environment provided.
-
-### Game.py
-
-This file defines the 'Game' class, which handles the game's core logic. It includes functions for initializing, shuffling, moving, and checking the game's state. It also works on a 4x4 grid (by default, but you can use 3x3 up to 31x31 games). See it in-action by running the console_controller.py or the controller of your choice.
-
-The 'Tile' class is also contained within Game.py; A Tile represents the numbered tiles of the 15-puzzle game. The class includes basic information about each tile (such as its label and position) and the functions for the game class to maintain the game state correctly.
-
-## TLDR (work in progress)
-
-The 15-puzzle game project, written in Python, includes an AI trainer and essential classes for the game's core mechanics. Key classes are the AITrainerController, Game, and Tile, which handle training the model, the gameplay, and tile representation, respectively.
-
-## Future
-
-This project was initially built as an "Hello-ML-World" project and started in 2020-2021. It was set aside for a couple of years, and now it has been refurbished and extended with the assistance of ChatGPT4 and Claude Sonnet 4.
-
-## Update
-
-Begin Date: 28 Mar 2023
-
-### AI Trainer Controller
-
-The AI trainer controller is the key component of this project. In summary, the code defines a Q-Network and an AI trainer controller for training an AI to play a sliding puzzle game. The AI trainer controller uses a deep Q-learning algorithm to train the Q-Network based on the game states and valid moves. The model is GPU-optimized and uses PyTorch.
-
-### Training Process
-
-The high-level training process includes the following steps:
-
-1. Initialize the AI_trainer_controller with game dimensions, learning rate, discount factor (gamma), and exploration rate (epsilon).
-2. Train the model for the specified number of episodes.
-3. Save the trained model to disk using the save_model() method.
-4. Load the trained model using the load_model() method before playing the game.
-5. Play the game using the play() method, which uses the trained model to make moves.
-
-During training, the AI selects actions using an epsilon-greedy exploration strategy, where it either chooses a random action with probability epsilon or selects the action with the highest Q-value according to the Q-Network.
-
-After training, the AI plays the game using the learned Q-Network to choose the best actions based on the current game state. The trained model is saved and loaded from disk, making it suitable for research, re-training, or other purposes.
+- `/fifteen/` - Main project with comprehensive documentation
+- `setup.py` - Package configuration for legacy compatibility
+- `requirements.txt` - Basic dependencies
+- `WIP/` - Work-in-progress experimental AI implementations

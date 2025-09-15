@@ -1,3 +1,9 @@
-pygame>=2.5.0
-tkinter
-numpy
+# Core dependencies (required)
+numpy>=1.20.0
+
+# Optional dependencies for different features
+tensorflow>=2.0.0  # For RL AI with neural networks (optional)
+matplotlib>=3.0.0   # For statistics visualization (optional)
+pygame>=2.5.0      # For GUI interface (optional)
+
+# Note: tkinter is included with Python standard library

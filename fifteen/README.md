@@ -104,6 +104,22 @@ python OptimalAI.py
 python demo_ai.py
 ```
 
+### Interactive Game Controllers
+**Experience the puzzle yourself first!**
+
+```bash
+# Play in terminal with simple text interface
+python console_controller.py
+
+# Play with colorful terminal interface (requires ncurses)
+python ncurses_controller.py
+
+# Play with graphical interface (requires tkinter)
+python GUI_controller.py
+```
+
+**Educational Value**: Understanding the puzzle's challenge level and solution strategies through hands-on play provides crucial context before studying AI approaches. Students often gain better insights into why certain AI techniques work by first experiencing the puzzle's difficulty themselves.
+
 ## 📊 Performance Comparison
 
 | Approach | Success Rate | Speed | Solution Quality | Learning Curve |

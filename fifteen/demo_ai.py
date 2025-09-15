@@ -34,60 +34,43 @@ def simple_demo():
     ai = AIController(game)
 
     print(f"\nAI Configuration:")
-    print(f"  Implementation: {'Deep Q-Network' if ai.use_tensorflow else 'Q-Table'}")
-    print(f"  State size: {ai.state_size}")
-    print(f"  Action space: {ai.action_space_size}")
+    print(f"  Implementation: Optimal IDA* Search")
+    print(f"  Heuristic: Manhattan Distance + Linear Conflict")
+    print(f"  Guarantees: Optimal solutions (shortest path)")
 
-    # Let AI attempt to solve (without training)
-    print("\nLetting untrained AI attempt solution...")
-    print("(Note: Untrained AI will make mostly random moves)")
+    # Use the optimal AI to solve
+    print("\nSolving puzzle optimally...")
+    print("(This AI finds the shortest possible solution)")
 
-    steps = 0
-    max_steps = 20
-    last_entropy = game.get_distance_sum()
+    solution = ai.solve_puzzle(verbose=False)
 
-    while not game.is_solved() and steps < max_steps:
-        steps += 1
+    if solution:
+        print(f"✓ Optimal solution found: {len(solution)} moves")
+        print(f"  Solve time: {ai.solve_time:.3f} seconds")
+        print(f"  Nodes generated: {ai.nodes_generated}")
+        print(f"  Initial heuristic: {ai.optimal_ai.heuristic(game.get_state())} moves")
 
-        valid_moves = game.get_valid_moves()
-        action = ai.choose_action(ai.get_state_representation(), valid_moves, training=False)
+        print(f"\nSolution sequence: {solution}")
 
-        print(f"\nStep {steps}:")
-        print(f"  Valid moves: {valid_moves}")
-        print(f"  AI chooses: {action}")
+        print("\nExecuting solution step by step...")
+        success = ai.execute_solution(verbose=True)
 
-        success = game.player_move(action)
         if success:
-            current_entropy = game.get_distance_sum()
-            entropy_change = last_entropy - current_entropy
-
-            print(f"  Entropy: {last_entropy} -> {current_entropy} ({entropy_change:+d})")
+            print(f"\n✓ Puzzle solved successfully!")
+            print("Final state:")
             print(game)
-
-            if entropy_change > 0:
-                print("  ✓ Good move - entropy reduced!")
-            elif entropy_change < 0:
-                print("  ↑ Entropy increased - might be strategic?")
-            else:
-                print("  → Entropy unchanged")
-
-            last_entropy = current_entropy
         else:
-            print("  ✗ Move failed!")
-
-        time.sleep(1)  # Pause for readability
-
-    if game.is_solved():
-        print(f"\n🎉 Puzzle solved in {steps} steps!")
+            print("✗ Solution execution failed")
     else:
-        print(f"\nPuzzle not solved in {max_steps} steps")
-        print(f"Final entropy: {game.get_distance_sum()}")
+        print("✗ Could not find solution within limits")
+        return
 
-    print("\nDemo Notes:")
-    print("- This AI is untrained, so moves are mostly random")
-    print("- With proper training, the AI learns complex patterns")
-    print("- Training teaches the AI when to increase entropy strategically")
-    print("- Use train_ai.py to train the AI properly")
+    # Show statistics
+    stats = ai.get_statistics()
+    print(f"\nFinal Statistics:")
+    for key, value in stats.items():
+        print(f"  {key}: {value}")
+
 
 
 def entropy_analysis_demo():
@@ -122,50 +105,40 @@ def entropy_analysis_demo():
     print("The AI must learn to reduce this entropy back to 0")
 
 
-def training_preview():
-    """Preview what training would look like."""
+def optimal_solver_demo():
+    """Show how the optimal solver works."""
     print("\n" + "=" * 50)
-    print("TRAINING PREVIEW")
+    print("OPTIMAL SOLVER ANALYSIS")
     print("=" * 50)
 
     game = Game(4, True)  # Start with shuffled puzzle
     ai = AIController(game)
 
-    print("This is how the AI learns:")
-    print(f"1. Start with shuffled puzzle (entropy: {game.get_distance_sum()})")
-    print("2. Try random moves initially (high exploration)")
-    print("3. Get rewards for reducing entropy")
-    print("4. Get penalties for increasing entropy")
-    print("5. Get big reward for solving puzzle")
-    print("6. Over many episodes, learn which moves lead to solutions")
+    print("This is how the optimal solver works:")
+    print(f"1. Analyze current puzzle state (entropy: {game.get_distance_sum()})")
+    print(f"2. Calculate heuristic estimate: {ai.get_heuristic_value()} moves")
+    print(f"3. Check solvability: {ai.is_solvable()}")
+    print("4. Use IDA* search to find shortest path")
+    print("5. Manhattan Distance + Linear Conflict heuristics")
+    print("6. Guarantee optimal (shortest) solution")
 
-    print(f"\nReward System Example:")
-    initial_entropy = game.get_distance_sum()
+    print(f"\nHeuristic Analysis:")
+    state = game.get_state()
+    manhattan_dist = ai.optimal_ai.manhattan_distance(state)
+    linear_conflict = ai.optimal_ai.linear_conflict(state)
+    total_heuristic = ai.get_heuristic_value()
 
-    # Simulate a move
-    valid_moves = game.get_valid_moves()
-    action = valid_moves[0]  # Take first valid move
+    print(f"  Manhattan Distance: {manhattan_dist}")
+    print(f"  Linear Conflict: {linear_conflict}")
+    print(f"  Total Heuristic: {total_heuristic}")
+    print(f"  (Lower bound estimate of moves needed)")
 
-    game.player_move(action)
-    new_entropy = game.get_distance_sum()
-
-    # Calculate what reward would be
-    entropy_change = initial_entropy - new_entropy
-    reward = ai.calculate_reward(initial_entropy, new_entropy, game.is_solved())
-
-    print(f"  Move: Tile {action}")
-    print(f"  Entropy change: {initial_entropy} -> {new_entropy} ({entropy_change:+d})")
-    print(f"  Reward: {reward:.3f}")
-
-    if entropy_change > 0:
-        print(f"  → Positive reward for reducing entropy!")
-    elif entropy_change < 0:
-        print(f"  → Negative reward for increasing entropy")
-        print(f"  → But sometimes necessary for better future positions!")
-    else:
-        print(f"  → Neutral entropy change")
-
-    print(f"\n  If puzzle was solved: Reward would be {1000 * ai.reward_scale:.0f}!")
+    print(f"\nKey Differences from Learning Approaches:")
+    print(f"  ✓ No training required - always optimal")
+    print(f"  ✓ Deterministic - same input gives same output")
+    print(f"  ✓ Mathematically sound - uses graph theory")
+    print(f"  ✓ Fast for practical puzzles")
+    print(f"  ✓ Understands puzzle structure, not just patterns")
 
 
 if __name__ == "__main__":
@@ -175,15 +148,16 @@ if __name__ == "__main__":
         input("\nPress Enter to continue to entropy analysis...")
         entropy_analysis_demo()
 
-        input("\nPress Enter to continue to training preview...")
-        training_preview()
+        input("\nPress Enter to continue to optimal solver analysis...")
+        optimal_solver_demo()
 
         print("\n" + "=" * 50)
         print("Demo completed!")
-        print("To train the AI properly, run:")
-        print("  python train_ai.py --episodes 500 --verbose")
-        print("To see interactive demos with trained AI:")
-        print("  python train_ai.py --load model_name --interactive")
+        print("The optimal AI now guarantees shortest solutions!")
+        print("No training required - it uses mathematical graph search.")
+        print("For evaluation on multiple puzzles, run:")
+        print("  python AI_controller.py")
+        print("  python OptimalAI.py")
 
     except KeyboardInterrupt:
         print("\nDemo interrupted by user")

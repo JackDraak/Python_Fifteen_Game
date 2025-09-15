@@ -60,7 +60,8 @@ class AIController:
                  target_update_freq: int = 100,
                  reward_scale: float = 1.0,
                  entropy_reward_scale: float = 0.1,
-                 use_tensorflow: bool = True):
+                 use_tensorflow: bool = True,
+                 anti_loop_penalty: float = 0.1):
 
         self.game = game
         self.breadth = game.breadth
@@ -75,6 +76,15 @@ class AIController:
         self.epsilon_min = epsilon_min
         self.reward_scale = reward_scale
         self.entropy_reward_scale = entropy_reward_scale
+        self.anti_loop_penalty = anti_loop_penalty
+
+        # Track recent moves to detect loops
+        self.recent_moves = deque(maxlen=8)
+        self.recent_states = deque(maxlen=6)
+        self.stagnation_counter = 0
+        self.last_entropy = None
+        self.max_consecutive_moves = 3  # Limit identical moves
+        self.force_exploration_threshold = 5  # Force exploration after this many stagnant steps
 
         # Network parameters
         self.batch_size = batch_size
@@ -87,6 +97,10 @@ class AIController:
         self.total_reward = 0
         self.best_score = -float('inf')
         self.training_history = []
+
+        # Optional statistics tracker for detailed analysis
+        self.statistics_tracker = None
+        self.initial_entropy = None  # Track for statistics
 
         # Initialize networks
         self.use_tensorflow = use_tensorflow and TF_AVAILABLE
@@ -151,33 +165,72 @@ class AIController:
 
         return state
 
-    def calculate_reward(self, prev_entropy: float, curr_entropy: float, solved: bool) -> float:
+    def calculate_reward(self, prev_entropy: float, curr_entropy: float, solved: bool, action: int = None,
+                        step_count: int = 0, max_steps: int = 300) -> float:
         """
         Calculate reward based on entropy change and solve status.
 
         Reward Philosophy:
-        - Large positive reward for solving (+1000)
+        - Large positive reward for solving (+1000, reduced by inefficiency)
         - Small positive reward for entropy reduction (+0.1 * reduction)
         - Small negative reward for entropy increase (-0.1 * increase)
-        - Small step penalty to encourage efficiency (-0.01)
+        - Progressive step penalty to encourage efficiency
+        - Large penalty for hitting step limit without solving
 
         This encourages the AI to:
         1. Prioritize solving the puzzle
         2. Generally reduce entropy when possible
         3. Accept temporary entropy increases when they lead to better positions
-        4. Solve efficiently
+        4. Solve efficiently (fewer steps = higher reward)
+        5. Avoid getting stuck in long, unproductive episodes
         """
         if solved:
-            return 1000.0 * self.reward_scale
+            # Reward solving, but reduce reward based on inefficiency
+            efficiency_bonus = max(0, (max_steps - step_count) / max_steps)
+            base_solve_reward = 1000.0
+            return (base_solve_reward + efficiency_bonus * 200) * self.reward_scale
 
         # Entropy-based reward (negative because we want to minimize distance)
         entropy_change = prev_entropy - curr_entropy
         entropy_reward = entropy_change * self.entropy_reward_scale
 
-        # Small step penalty to encourage efficiency
-        step_penalty = -0.01
+        # Progressive step penalty - gets worse as episode drags on
+        step_ratio = step_count / max_steps
+        if step_ratio < 0.5:
+            step_penalty = -0.01  # Early steps: small penalty
+        elif step_ratio < 0.8:
+            step_penalty = -0.05  # Middle steps: moderate penalty
+        else:
+            step_penalty = -0.2   # Late steps: large penalty
 
-        total_reward = entropy_reward + step_penalty
+        # Timeout penalty - huge penalty for hitting step limit
+        timeout_penalty = 0.0
+        if step_count >= max_steps:
+            timeout_penalty = -100.0  # Large penalty for timeout
+
+        # Anti-loop penalty
+        loop_penalty = 0.0
+        if action is not None:
+            self.recent_moves.append(action)
+
+            # Check for immediate back-and-forth (A-B-A-B pattern)
+            if len(self.recent_moves) >= 4:
+                if (self.recent_moves[-1] == self.recent_moves[-3] and
+                    self.recent_moves[-2] == self.recent_moves[-4]):
+                    loop_penalty = -self.anti_loop_penalty * 2  # Strong penalty for immediate loops
+
+            # Check for repetitive moves (same move 3+ times in recent history)
+            if len(self.recent_moves) >= 6:
+                recent_6 = list(self.recent_moves)
+                move_counts = {}
+                for move in recent_6:
+                    move_counts[move] = move_counts.get(move, 0) + 1
+
+                max_repeats = max(move_counts.values())
+                if max_repeats >= 3:
+                    loop_penalty = -self.anti_loop_penalty * (max_repeats - 2)
+
+        total_reward = entropy_reward + step_penalty + timeout_penalty + loop_penalty
         return total_reward * self.reward_scale
 
     def get_valid_actions(self) -> List[int]:
@@ -186,16 +239,20 @@ class AIController:
 
     def choose_action(self, state: np.ndarray, valid_actions: List[int], training: bool = True) -> int:
         """
-        Choose action using epsilon-greedy policy with valid action masking.
+        Choose action using epsilon-greedy policy with valid action masking and anti-loop measures.
 
-        During training: explores with probability epsilon
-        During evaluation: always exploits (chooses best action)
+        During training: explores with probability epsilon, with forced exploration when stuck
+        During evaluation: always exploits (chooses best action) but still avoids obvious loops
         """
-        if training and random.random() < self.epsilon:
-            # Exploration: random valid action
+        # Force exploration if stagnating (regardless of training mode)
+        if self.stagnation_counter >= self.force_exploration_threshold:
             return random.choice(valid_actions)
 
-        # Exploitation: best valid action according to Q-network
+        # Force exploration during training with epsilon probability
+        if training and random.random() < self.epsilon:
+            return random.choice(valid_actions)
+
+        # Get Q-values for exploitation
         if self.use_tensorflow:
             q_values = self.q_network.predict(state.reshape(1, -1), verbose=0)[0]
         else:
@@ -211,7 +268,29 @@ class AIController:
             if 1 <= action <= self.action_space_size:
                 masked_q_values[action - 1] = q_values[action - 1]
 
-        # Choose best valid action
+        # Anti-loop measures: penalize recently repeated actions
+        if len(self.recent_moves) >= self.max_consecutive_moves:
+            recent_moves_list = list(self.recent_moves)
+
+            # Count consecutive occurrences of each action at the end
+            for action in valid_actions:
+                consecutive_count = 0
+                for i in range(len(recent_moves_list) - 1, -1, -1):
+                    if recent_moves_list[i] == action:
+                        consecutive_count += 1
+                    else:
+                        break
+
+                # Heavily penalize actions that have been repeated too much
+                if consecutive_count >= self.max_consecutive_moves:
+                    if 1 <= action <= self.action_space_size:
+                        masked_q_values[action - 1] = -np.inf  # Block this action entirely
+
+        # If all actions are blocked, force random exploration
+        if np.all(masked_q_values == -np.inf):
+            return random.choice(valid_actions)
+
+        # Choose best remaining valid action
         best_action_idx = np.argmax(masked_q_values)
         return best_action_idx + 1
 
@@ -288,7 +367,17 @@ class AIController:
         if self.use_tensorflow:
             self.target_network.set_weights(self.q_network.get_weights())
 
-    def play_episode(self, max_steps: int = 1000, training: bool = True, verbose: bool = False) -> Tuple[float, int, bool]:
+    def attach_statistics_tracker(self, tracker):
+        """
+        Attach a StatisticsTracker for detailed performance analysis.
+
+        Args:
+            tracker: StatisticsTracker instance for recording detailed metrics
+        """
+        self.statistics_tracker = tracker
+        print(f"Statistics tracker attached - will record detailed episode data")
+
+    def play_episode(self, max_steps: int = 300, training: bool = True, verbose: bool = False) -> Tuple[float, int, bool]:
         """
         Play one complete episode.
 
@@ -307,14 +396,31 @@ class AIController:
         steps = 0
         solved = False
 
+        # Reset tracking variables for this episode
+        self.stagnation_counter = 0
+        self.last_entropy = None
+        self.recent_moves.clear()
+        self.recent_states.clear()
+
+        # Record initial entropy for statistics
+        self.initial_entropy = self.game.get_distance_sum()
+
         for step in range(max_steps):
             # Get valid actions
             valid_actions = self.get_valid_actions()
             if not valid_actions:
+                if verbose:
+                    print(f"No valid moves available at step {steps}")
                 break
 
             # Get current entropy
             prev_entropy = self.game.get_distance_sum()
+
+            # Track stagnation (no entropy improvement)
+            if self.last_entropy is not None and prev_entropy >= self.last_entropy:
+                self.stagnation_counter += 1
+            else:
+                self.stagnation_counter = 0  # Reset when making progress
 
             # Choose and execute action
             action = self.choose_action(state, valid_actions, training)
@@ -324,12 +430,15 @@ class AIController:
                 # Invalid move, give penalty and continue
                 reward = -10.0 * self.reward_scale
                 total_reward += reward
+                if verbose:
+                    print(f"Step {steps}: INVALID MOVE {action}")
                 continue
 
             # Calculate reward
             curr_entropy = self.game.get_distance_sum()
             solved = self.game.is_solved()
-            reward = self.calculate_reward(prev_entropy, curr_entropy, solved)
+            self.last_entropy = curr_entropy  # Update for next iteration
+            reward = self.calculate_reward(prev_entropy, curr_entropy, solved, action, steps, max_steps)
             total_reward += reward
 
             # Get next state
@@ -345,14 +454,24 @@ class AIController:
             steps += 1
 
             if verbose:
+                efficiency_pct = (1 - steps/max_steps) * 100
+                stagnation_info = f"Stagnant:{self.stagnation_counter}" if self.stagnation_counter > 0 else ""
+                forced_exploration = "FORCED_EXPLORATION" if self.stagnation_counter >= self.force_exploration_threshold else ""
                 print(f"Step {steps}: Action {action}, Entropy {prev_entropy}->{curr_entropy}, "
-                      f"Reward {reward:.3f}, Total {total_reward:.3f}")
+                      f"Reward {reward:.3f}, Total {total_reward:.3f}, Efficiency: {efficiency_pct:.1f}% "
+                      f"{stagnation_info} {forced_exploration}".strip())
 
             # Check if solved
             if solved:
                 if verbose:
-                    print(f"*** SOLVED in {steps} steps! Total reward: {total_reward:.3f} ***")
+                    efficiency_pct = (1 - steps/max_steps) * 100
+                    print(f"*** SOLVED in {steps} steps! Efficiency: {efficiency_pct:.1f}% Total reward: {total_reward:.3f} ***")
                 break
+
+        # Handle timeout
+        if steps >= max_steps and not solved:
+            if verbose:
+                print(f"*** TIMEOUT after {max_steps} steps! Final entropy: {self.game.get_distance_sum()} ***")
 
         # Update target network periodically
         if training and self.step_count % self.target_update_freq == 0:
@@ -375,6 +494,13 @@ class AIController:
                 'epsilon': self.epsilon,
                 'final_entropy': self.game.get_distance_sum()
             })
+
+        # Record detailed statistics if tracker is attached
+        if self.statistics_tracker:
+            training_time = 0.0  # Would be calculated in real training
+            self.statistics_tracker.record_episode(
+                self, self.episode_count, total_reward, steps, solved, training_time
+            )
 
         return total_reward, steps, solved
 

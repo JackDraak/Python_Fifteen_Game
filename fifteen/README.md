@@ -14,9 +14,13 @@ This project is designed for **educational purposes** to help students understan
 
 ### Requirements
 - Python 3.8+
-- NumPy (required)
+- NumPy (required for all functionality)
 - TensorFlow 2.x (optional, for RL AI - falls back to Q-table)
 - Matplotlib (optional, for statistics visualization)
+- pygame (optional, for GUI interface)
+- tkinter (optional, alternative GUI interface)
+
+**Note**: pygame and tkinter are NOT required for console operation or AI models
 
 ### Installation
 ```bash
@@ -24,8 +28,12 @@ This project is designed for **educational purposes** to help students understan
 git clone <repository-url>
 cd fifteen
 
-# Install dependencies
-pip install numpy tensorflow matplotlib
+# Install required dependencies
+pip install numpy
+
+# Install optional dependencies (choose what you need)
+pip install tensorflow matplotlib  # For RL AI and statistics
+pip install pygame  # For GUI interface
 
 # Run the educational demo
 python integrated_demo.py

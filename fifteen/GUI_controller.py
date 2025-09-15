@@ -5,10 +5,22 @@
 from Game import Game
 import pygame.mixer
 import tkinter as tk
+import os
+import pkg_resources
 
+# Initialize the mixer
 pygame.mixer.init()
-click_sound = pygame.mixer.Sound("audio/click.wav")
-tada_sound = pygame.mixer.Sound("audio/tada.wav")
+
+# Load sound files from the 'audio' directory within the package
+try:
+    click_sound = pygame.mixer.Sound(os.path.join('audio', 'click.wav'))
+    tada_sound = pygame.mixer.Sound(os.path.join('audio', 'tada.wav'))
+    click_sound.set_volume(0.5)  # Set default volume to 50%
+    tada_sound.set_volume(0.5)   # Set default volume to 50%
+except FileNotFoundError:
+    # Fallback to default sounds if audio files not found
+    click_sound = None
+    tada_sound = None
 
 class Controller:
     def __init__(self, game: Game):
@@ -74,14 +86,18 @@ class Controller:
         blank_row, blank_col = self.game.get_position(self.game.blank_label)
         if tile_row == blank_row or tile_col == blank_col:
             if self.game.player_move(self.game.get_label(tile_row, tile_col)):
-                click_sound.play()
+                if click_sound:
+                    click_sound.play()
                 self.update_tiles()
                 if self.game.is_solved():
-                    tada_sound.play()
+                    if tada_sound:
+                        tada_sound.play()
                     self.handle_win()
 
     def handle_reshuffle(self):
-        self.game = Game(self.game.breadth, True)
+        # Create new game with incremented seed for variety
+        new_seed = self.game.seed + 1 if self.game.seed is not None else None
+        self.game = Game(self.game.breadth, True, new_seed)
         self.update_tiles()
         self.win_label.grid_remove()
         self.win_button.grid_remove()
@@ -111,11 +127,13 @@ class Controller:
     
     def update_volume(self, value):
         volume = int(value) / 100
-        click_sound.set_volume(volume)
-        tada_sound.set_volume(volume)
+        if click_sound:
+            click_sound.set_volume(volume)
+        if tada_sound:
+            tada_sound.set_volume(volume)
         self.volume_var.set("Volume: {}%".format(self.scale_to_percentage(value)))
 
 if __name__ == "__main__":
-    game = Game(4, True)
+    game = Game(4, True, seed=None)  # Made explicit for clarity
     gui = Controller(game)
     gui.window.mainloop()

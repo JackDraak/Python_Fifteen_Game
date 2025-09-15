@@ -17,6 +17,7 @@ class NCursesController:
         self.cursor_col = 0
         self.move_count = 0
         self.stdscr = None
+        self.quit_completely = False
         
         # Color pairs (will be initialized in setup_colors)
         self.COLOR_NORMAL = 1      # Normal tiles
@@ -123,7 +124,8 @@ class NCursesController:
             "  Arrow Keys or WASD - Move cursor",
             "  Space - Move selected tile(s)",
             "  R - Restart/Reshuffle",
-            "  Q - Quit to console",
+            "  ESC - Return to console mode",
+            "  Q - Quit completely",
             "  Ctrl+C - Exit completely"
         ]
         
@@ -242,7 +244,11 @@ class NCursesController:
             self.move_count = 0
             self.draw_message("Board reshuffled!")
             
-        elif key in [ord('q'), ord('Q')]:  # Quit to console
+        elif key == 27:  # ESC - Return to console mode
+            return False
+
+        elif key in [ord('q'), ord('Q')]:  # Quit completely
+            self.quit_completely = True
             return False
             
         # Check for win condition
@@ -313,8 +319,8 @@ def create_controller(game: Game, use_ncurses: bool = True) -> Controller:
 
 if __name__ == '__main__':
     # Get game size using the console controller's input method
-    game_size = Controller.input_game_size()
-    game = Game(game_size, True)
+    game_size, seed = Controller.input_game_size()
+    game = Game(game_size, True, seed)
     
     # Ask user for interface preference
     print("Choose interface:")
@@ -329,10 +335,15 @@ if __name__ == '__main__':
         try:
             controller = NCursesController(game)
             controller.run()
-            print("\nReturning to console mode...")
-            # Continue in console mode after ncurses
-            console_controller = Controller(controller.game)
-            console_controller.play()
+
+            # Check if user wanted to quit completely
+            if controller.quit_completely:
+                print("\nThank you for playing 'fifteen'. Have a nice day!")
+            else:
+                print("\nReturning to console mode...")
+                # Continue in console mode after ncurses
+                console_controller = Controller(controller.game)
+                console_controller.play()
         except Exception as e:
             print(f"NCurses mode failed: {e}")
             print("Falling back to console mode...")

@@ -1,5 +1,37 @@
 # Python: Fifteen Puzzle Game
 
+## Installation
+
+```
+git clone https://github.com/JackDraak/Python_Fifteen_Game.git
+cd Python_Fifteen_Game
+```
+
+## Install dependencies and package
+```
+pip install -r requirements.txt
+pip install -e .
+```
+
+## Running the Game
+
+### GUI Version
+```
+python3 GUI_controller.py
+```
+
+### Console Version
+```
+python3 console_controller.py
+```
+
+## Dependencies
+- Python 3.7+
+- pygame
+- tkinter
+- numpy
+
+## More Spiel
 Welcome to my Python implementation of the classic 2-dimensional tile game "Fifteen," made available on GitHub. This project contains the essential classes for the game's core mechanics. The primary purpose of this repo is to get some introduction to machine learning. It will be done poorly, I guarantee, so do not use it as an example. If that's why you're here, I highly recommend that you don't even look at the AI trainer code. All you need to take away from here for some plug-and-play 15 puzzle are:
 
 - Game.py # Game class, core of the game, and Tile helper class

@@ -1,50 +1,77 @@
 # Game.py (with Tile class)
 # Enhanced Game.py with multi-tile movement support with Claude Sonnet 4
+
 import numpy as np
 import random
 import usage
 
 
 class Game:
-     
-    def __init__(self, breadth: int, shuffled: bool) -> None:
+
+     ## GAME STATE METHODS
+
+    def __init__(self, breadth: int, shuffled: bool, seed: int = None) -> None:
         entropy_factor = 100
         self.blank_label = breadth * breadth
         self.blank_position = breadth - 1, breadth - 1
-        self.breadth = breadth 
+        self.breadth = breadth
         self.copy_count = 0
+        self.seed = seed
         self.tiles = self.generate_tiles(breadth)
         self.shuffle_steps = breadth * entropy_factor
         if shuffled:
             self.shuffle(self.shuffle_steps)
             # self.shuffle(3)                           #  TODO revert to above line after testing
 
-    def __repr__(self):
-        print_string = ""
-        for x in range(self.breadth):
-            print_string += "\t"
-            for y in range(self.breadth):
-                label = self.get_label(x, y)
-                if label != self.blank_label:
-                    print_string += f"\t{label}"
-                else:
-                    print_string += "\t"
-            print_string += "\n"
-        return print_string
-    
     def copy(self):
         self.copy_count += 1
-        copied_game = Game(self.breadth, self.shuffle_steps) # Generate a Game object repleat with Tile objects
-        copied_game.tiles = [self.tiles.copy() for tile in self.tiles]  # Deep copy of the tiles
+        copied_game = Game(self.breadth, False, self.seed) # Generate a Game object with same seed
+        copied_game.tiles = [tile.copy() for tile in self.tiles]  # Deep copy of the tiles
+        copied_game.blank_position = self.blank_position
         if self.copy_count % 100 == 0:
             print(f"Copy count: {self.copy_count}")
             print(self)
             print(copied_game)
             print()
-        # copied_game.empty_tile_pos = self.empty_tile_pos  # Copy the position of the empty tile # probably unneeded
         return copied_game
 
-    # TODO Add seeding, as a way to re-generate a game with a known Tiles set state.
+    def get_state(self):
+        tiles = list()
+        for row in range(self.breadth):
+            for column in range(self.breadth):
+                tiles.append(self.get_label(row, column))
+        return tiles
+
+    def set_state(self, state: list) -> bool:
+        """
+        Restore game state from a serialized list of tile labels.
+        Returns True if successful, False if invalid state.
+        """
+        if len(state) != self.breadth * self.breadth:
+            return False
+
+        # Validate that all expected labels are present
+        expected_labels = set(range(1, self.blank_label + 1))
+        if set(state) != expected_labels:
+            return False
+
+        # Set tile positions based on the state
+        for row in range(self.breadth):
+            for column in range(self.breadth):
+                index = row * self.breadth + column
+                label = state[index]
+                if not self.set_tile_position(label, row, column):
+                    return False
+                if label == self.blank_label:
+                    self.blank_position = row, column
+
+        return True
+
+    def is_solved(self):
+        return list(range(1, self.blank_label + 1)) == self.get_labels_as_list()
+
+    ## BOARD OPERATION METHODS
+
     @staticmethod
     def generate_tiles(breadth: int):
         tiles = list()
@@ -54,6 +81,40 @@ class Game:
                 label += 1
                 tiles.append(Tile(label, row, column, breadth))
         return tiles
+
+    def slide_tile(self, label: int):                   #  Swap tagret tile with blank tile.
+        if self._get_adjacent_moves().__contains__(label):  # Use adjacent-only check for slide_tile
+            this_blank_position = self.blank_position
+            this_tile_pos = self.get_position(label)
+                                                        #  Set x, y position of target tile.
+            if not self.set_tile_position(label, this_blank_position[0], this_blank_position[1]):   
+                print(f"\n{self}Game.set_tile_position({label},{this_blank_position[0]},{this_blank_position[1]}) FAIL")
+                return False
+                                                        #  Set x, y position of blank.
+            if not self.set_tile_position(self.blank_label, this_tile_pos[0], this_tile_pos[1]):   
+                print(f"\n{self}Game.set_tile_position({self.blank_label},{this_tile_pos[0]},{this_tile_pos[1]}) FAIL")
+                return False
+            else:
+                self.blank_position = this_tile_pos[0], this_tile_pos[1]
+                return True
+        return False
+
+    def player_move(self, label: int):
+        """
+        High-level player move function that can handle both single and multi-tile moves.
+        Returns True if successful, False otherwise.
+        """
+        sequence = self.get_move_sequence(label)
+        if not sequence:
+            return False
+    
+        # Execute the sequence using existing slide_tile method
+        for tile_label in sequence:
+            if not self.slide_tile(tile_label):
+                return False  # If any move fails, return failure
+        return True
+
+    ## HELPER METHODS FOR AI_TRAINER_CONTROLLER
 
     def get_distance_by_label(self, label: int):
         for tile in self.tiles:
@@ -73,11 +134,6 @@ class Game:
     def get_distance_sum(self):
         return np.sum([tile.distance() for tile in self.tiles])
     
-    def get_label(self, row: int, column: int):
-        for tile in self.tiles:
-            if tile.row == row and tile.column == column:
-                return tile.label
-
     def get_labels_as_list(self):                       #  Return tile-set labels as a 1D array.
         tiles = list()
         for row in range(self.breadth):
@@ -94,21 +150,47 @@ class Game:
             tiles.append(rows)
         return tiles
 
-    def get_ordinal_label(self, direction: tuple):
-        delta = (direction[0] + self.blank_position[0]), (direction[1] + self.blank_position[1])
-        return self.get_label(delta[0], delta[1])       #  Return tile.label based on position delta:blank
+    ## POSITION & LABEL METHODS
+
+    def get_label(self, row: int, column: int):
+        for tile in self.tiles:
+            if tile.row == row and tile.column == column:
+                return tile.label
 
     def get_position(self, label: int):
         for tile in self.tiles:
             if tile.label == label:
                 return tile.row, tile.column
 
-    def get_state(self):
-        tiles = list()
-        for row in range(self.breadth):
-            for column in range(self.breadth):
-                tiles.append(self.get_label(row, column))
-        return tiles
+    def get_ordinal_label(self, direction: tuple):
+        delta = (direction[0] + self.blank_position[0]), (direction[1] + self.blank_position[1])
+        return self.get_label(delta[0], delta[1])       #  Return tile.label based on position delta:blank
+    
+    def set_tile_position(self, label: int, row: int, column: int):
+        for tile in self.tiles:
+            if tile.label == label:
+                tile.move_to(row, column)
+                return True
+        return False
+
+    def shuffle(self, moves: int):
+        # Set random seed if provided for deterministic shuffles
+        if self.seed is not None:
+            random.seed(self.seed)
+
+        last_move = int()
+        while moves > 0:
+            # Use original adjacent-only logic for shuffling to ensure solvability
+            options = self._get_adjacent_moves()
+            if options.__contains__(last_move):
+                options.remove(last_move)
+            random_move = options[random.randint(0, len(options) - 1)]
+            self.slide_tile(random_move)
+            last_move = random_move
+            moves -= 1
+        return True
+    
+    ## MOVE VALIDATION METHODS
 
     def get_valid_moves(self):
         """Return all tiles that can be moved: adjacent tiles + tiles in same row/column as blank."""
@@ -199,56 +281,7 @@ class Game:
             return sequence
         
         return []
-
-    def player_move(self, label: int):
-        """
-        High-level player move function that can handle both single and multi-tile moves.
-        Returns True if successful, False otherwise.
-        """
-        sequence = self.get_move_sequence(label)
-        if not sequence:
-            return False
-        
-        # Execute the sequence using existing slide_tile method
-        for tile_label in sequence:
-            if not self.slide_tile(tile_label):
-                return False  # If any move fails, return failure
-        
-        return True
-        
-    def is_solved(self):
-        return list(range(1, self.blank_label + 1)) == self.get_labels_as_list()
-
-    def print_tile_set(self):
-        for tile in self.tiles:
-            lab = tile.label
-            ord = tile.ordinal
-            dim = tile.breadth
-            row = tile.row
-            col = tile.column
-            dis = self.get_distance_by_label(tile.label)
-            print(f"<Tile> label:{lab}({ord}), position:({dim}){row},{col} distance:{dis}")
-
-    def set_tile_position(self, label: int, row: int, column: int):
-        for tile in self.tiles:
-            if tile.label == label:
-                tile.move_to(row, column)
-                return True
-        return False
-
-    def shuffle(self, moves: int):
-        last_move = int()
-        while moves > 0:
-            # Use original adjacent-only logic for shuffling to ensure solvability
-            options = self._get_adjacent_moves()
-            if options.__contains__(last_move):
-                options.remove(last_move)
-            random_move = options[random.randint(0, len(options) - 1)]
-            self.slide_tile(random_move)
-            last_move = random_move
-            moves -= 1
-        return True
-
+    
     def _get_adjacent_moves(self):
         """Helper method that returns only adjacent moves (original get_valid_moves logic)."""
         valid_moves = list()
@@ -264,22 +297,30 @@ class Game:
             valid_moves.remove(self.blank_label)
         return valid_moves
 
-    def slide_tile(self, label: int):                   #  Swap tagret tile with blank tile.
-        if self._get_adjacent_moves().__contains__(label):  # Use adjacent-only check for slide_tile
-            this_blank_position = self.blank_position
-            this_tile_pos = self.get_position(label)
-                                                        #  Set x, y position of target tile.
-            if not self.set_tile_position(label, this_blank_position[0], this_blank_position[1]):   
-                print(f"\n{self}Game.set_tile_position({label},{this_blank_position[0]},{this_blank_position[1]}) FAIL")
-                return False
-                                                        #  Set x, y position of blank.
-            if not self.set_tile_position(self.blank_label, this_tile_pos[0], this_tile_pos[1]):   
-                print(f"\n{self}Game.set_tile_position({self.blank_label},{this_tile_pos[0]},{this_tile_pos[1]}) FAIL")
-                return False
-            else:
-                self.blank_position = this_tile_pos[0], this_tile_pos[1]
-                return True
-        return False
+    ## DISPLAY METHODS
+
+    def __repr__(self):
+        print_string = ""
+        for x in range(self.breadth):
+            print_string += "\t"
+            for y in range(self.breadth):
+                label = self.get_label(x, y)
+                if label != self.blank_label:
+                    print_string += f"\t{label}"
+                else:
+                    print_string += "\t"
+            print_string += "\n"
+        return print_string
+    
+    def print_tile_set(self):
+        for tile in self.tiles:
+            lab = tile.label
+            ord = tile.ordinal
+            dim = tile.breadth
+            row = tile.row
+            col = tile.column
+            dis = self.get_distance_by_label(tile.label)
+            print(f"<Tile> label:{lab}({ord}), position:({dim}){row},{col} distance:{dis}")
 
 
 class Tile:

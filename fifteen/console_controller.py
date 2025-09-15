@@ -31,11 +31,12 @@ class Controller:
             return command
 
     @staticmethod
-    def input_game_size() -> int:
+    def input_game_size() -> Tuple[int, Union[int, None]]:
         size_default = 4                    #  For the classic '15 puzzle', use a grid with a dimension of 4.
         size_max = 31                       #  Grids with dimension >31 have >1000 tiles, would require re-formatting.
         size_min = 3                        #  Grids with dimension <3 are not functionally playable.
         size = size_default
+        seed = None
         print("\nWelcome to the console version of the game 'Fifteen'! Goal: slide the game tiles ")
         print("into the open position, 1-by-1, to re-order them. [Or (q)uit at any prompt]")
         print("To play game, ", end="")
@@ -51,8 +52,15 @@ class Controller:
                 size = int(grid_size)
                 if size_min <= size <= size_max:
                     valid_input = True
+
+        # Ask for optional seed for deterministic shuffles
+        seed_input = input("Enter a seed for deterministic shuffles (optional, press Enter to skip): ")
+        seed_input = Controller.command_check(seed_input)
+        if seed_input != "" and type(seed_input) != tuple and seed_input.isdigit():
+            seed = int(seed_input)
+
         print()
-        return size
+        return size, seed
 
     def input_shuffle(self, game: Game) -> None:
         print("*** Congratulations, you solved the puzzle! ***\n")
@@ -62,7 +70,12 @@ class Controller:
             shuffles = input(f"How many tile-moves would you like to shuffle the board? [default: {game.shuffle_steps}] \n")
             shuffles = self.command_check(shuffles)
             if shuffles == "":              #  Default value selected.
-                game.shuffle(game.shuffle_steps)
+                # Create new game with same parameters but increment seed for variety
+                new_seed = game.seed + 1 if game.seed is not None else None
+                new_game = Game(game.breadth, True, new_seed)
+                game.tiles = new_game.tiles
+                game.blank_position = new_game.blank_position
+                game.seed = new_seed
                 shuffled = True
                 pass
             elif type(shuffles) == tuple:   #  Reject WASD input; unrelated to shuffling
@@ -105,7 +118,7 @@ class Controller:
         
 
 if __name__ == '__main__':
-    game_size = Controller.input_game_size()
-    game = Game(game_size, True)
+    game_size, seed = Controller.input_game_size()
+    game = Game(game_size, True, seed)
     controller = Controller(game)
     controller.play()
